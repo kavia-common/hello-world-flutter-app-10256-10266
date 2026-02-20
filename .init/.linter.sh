@@ -1,0 +1,4 @@
+#!/bin/bash
+cd /home/kavia/workspace/code-generation/hello-world-flutter-app-10256-10266/hello_world_frontend
+flutter analyze
+
