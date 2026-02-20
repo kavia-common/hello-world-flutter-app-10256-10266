@@ -1,0 +1,9 @@
+This container's Preview is configured via .project_manifest.yaml to run the Flutter app as a WEB build.
+
+Why:
+- flutter run / APK requires an emulator/device and will not render reliably in the preview iframe.
+- Preview starts a static HTTP server from build/web after `flutter build web --release`.
+
+If you see "app is being generated" in Preview:
+- Verify .project_manifest.yaml container_root points to hello_world_frontend
+- Verify buildCommand produces build/web with main.dart.js and flutter_bootstrap.js
