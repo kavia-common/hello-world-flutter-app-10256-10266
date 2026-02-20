@@ -3,33 +3,28 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hello_world_frontend/main.dart';
 
 void main() {
-  testWidgets('Shows Hello World centered', (WidgetTester tester) async {
-    await tester.pumpWidget(const HelloWorldApp());
+  testWidgets('App shows persistent header and starts on Login screen', (WidgetTester tester) async {
+    await tester.pumpWidget(const CalculatorApp());
 
-    // Text exists.
-    expect(find.text('Hello World'), findsOneWidget);
+    // Header is always visible and contains app name as title + subtitle.
+    expect(find.text('Calculator App'), findsNWidgets(2));
 
-    // Center widget exists and contains the text.
-    expect(find.byType(Center), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(Center),
-        matching: find.text('Hello World'),
-      ),
-      findsOneWidget,
-    );
+    // Starts on Login screen content.
+    expect(find.text('Login'), findsOneWidget);
+    expect(find.text('Create an account'), findsOneWidget);
 
-    // Scaffold exists (single screen).
-    expect(find.byType(Scaffold), findsOneWidget);
+    // Shows login fields.
+    expect(find.widgetWithText(TextField, 'Email'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'Password'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Login'), findsOneWidget);
   });
 
-  testWidgets('Uses light theme (MaterialApp + ThemeData present)', (WidgetTester tester) async {
-    await tester.pumpWidget(const HelloWorldApp());
+  testWidgets('Theme uses light scaffold background', (WidgetTester tester) async {
+    await tester.pumpWidget(const CalculatorApp());
 
     final MaterialApp app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.theme, isNotNull);
 
-    // Sanity-check: scaffold background is the light background color specified.
     final ThemeData theme = app.theme!;
     expect(theme.scaffoldBackgroundColor, const Color(0xFFF9FAFB));
   });
