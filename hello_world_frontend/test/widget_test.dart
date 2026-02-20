@@ -3,35 +3,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hello_world_frontend/main.dart';
 
 void main() {
-  testWidgets('Shows Hello World centered', (WidgetTester tester) async {
-    await tester.pumpWidget(const HelloWorldApp());
+  testWidgets('Initial route is Login screen', (WidgetTester tester) async {
+    await tester.pumpWidget(const CalculatorApp());
 
-    // Text exists.
-    expect(find.text('Hello World'), findsOneWidget);
-
-    // Center widget exists and contains the text.
-    expect(find.byType(Center), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(Center),
-        matching: find.text('Hello World'),
-      ),
-      findsOneWidget,
-    );
-
-    // Scaffold exists (single screen).
-    expect(find.byType(Scaffold), findsOneWidget);
+    expect(find.text(AppStrings.loginTitle), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, AppStrings.loginButton), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, AppStrings.goToSignUpButton), findsOneWidget);
   });
 
-  testWidgets('Uses light theme (MaterialApp + ThemeData present)', (WidgetTester tester) async {
-    await tester.pumpWidget(const HelloWorldApp());
+  testWidgets('Uses light theme background color parity', (WidgetTester tester) async {
+    await tester.pumpWidget(const CalculatorApp());
 
     final MaterialApp app = tester.widget<MaterialApp>(find.byType(MaterialApp));
     expect(app.theme, isNotNull);
 
-    // Sanity-check: scaffold background is the light background color specified.
     final ThemeData theme = app.theme!;
     expect(theme.scaffoldBackgroundColor, const Color(0xFFF9FAFB));
   });
 }
-
