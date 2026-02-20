@@ -107,7 +107,7 @@ void main() {
   });
 
   group('CalculatorApp - Dashboard calculator', () {
-    Future<void> _goToDashboard(WidgetTester tester) async {
+    Future<void> goToDashboard(WidgetTester tester) async {
       await tester.pumpWidget(const CalculatorApp());
 
       await tester.enterText(find.widgetWithText(TextField, AppStrings.emailLabel), 'user@example.com');
@@ -119,7 +119,7 @@ void main() {
     }
 
     testWidgets('formats result without trailing zeros (#.########## parity)', (WidgetTester tester) async {
-      await _goToDashboard(tester);
+      await goToDashboard(tester);
 
       await tester.enterText(find.widgetWithText(TextField, AppStrings.operandALabel), '1');
       await tester.enterText(find.widgetWithText(TextField, AppStrings.operandBLabel), '3');
@@ -133,7 +133,7 @@ void main() {
     });
 
     testWidgets('divide by zero shows error banner and keeps result as dash', (WidgetTester tester) async {
-      await _goToDashboard(tester);
+      await goToDashboard(tester);
 
       await tester.enterText(find.widgetWithText(TextField, AppStrings.operandALabel), '10');
       await tester.enterText(find.widgetWithText(TextField, AppStrings.operandBLabel), '0');
@@ -146,7 +146,7 @@ void main() {
     });
 
     testWidgets('invalid operand shows validation + general banner', (WidgetTester tester) async {
-      await _goToDashboard(tester);
+      await goToDashboard(tester);
 
       await tester.enterText(find.widgetWithText(TextField, AppStrings.operandALabel), 'abc');
       await tester.enterText(find.widgetWithText(TextField, AppStrings.operandBLabel), '2');
