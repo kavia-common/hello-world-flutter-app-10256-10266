@@ -1,0 +1,2 @@
+# This file marks the correct container root for initialization workflows.
+# It is intentionally minimal; presence indicates the project root for this container.
