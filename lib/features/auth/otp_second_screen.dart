@@ -74,9 +74,9 @@ class _OTPSecondScreenState extends State<OTPSecondScreen> {
                   ),
                   const SizedBox(height: 6),
                   // Subtitle — matches tvWelcomeChoose
-                  Text(
+                  const Text(
                     "Hold Tight! Rider is on it's way to your location",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontFamily: 'ProductSans',
                       color: AppTheme.black,
@@ -119,7 +119,7 @@ class _OTPSecondScreenState extends State<OTPSecondScreen> {
                     ),
                     const SizedBox(height: 20),
                     // "Waiting for OTP" text — matches waiting_tv
-                    Text(
+                    const Text(
                       'Waiting for OTP',
                       style: TextStyle(
                         fontSize: 13,
@@ -143,12 +143,15 @@ class _OTPSecondScreenState extends State<OTPSecondScreen> {
                   onLongPress: _isVerifying ? null : _bypassOTPForTesting,
                   child: Container(
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: _isVerifying
-                          ? AppTheme.bgDarkGray.withAlpha(153)
-                          : AppTheme.bgDarkGray,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
+                    decoration: _isVerifying
+                        ? BoxDecoration(
+                            color: AppTheme.bgDarkGray.withAlpha(153),
+                            borderRadius: BorderRadius.circular(24),
+                          )
+                        : const BoxDecoration(
+                            color: AppTheme.bgDarkGray,
+                            borderRadius: BorderRadius.all(Radius.circular(24)),
+                          ),
                     child: _isVerifying
                         ? const SizedBox(
                             height: 22,

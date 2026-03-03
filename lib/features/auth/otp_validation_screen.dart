@@ -140,7 +140,7 @@ class _OTPValidationScreenState extends State<OTPValidationScreen> {
               ),
               const SizedBox(height: 16),
               // OR divider — matches tvor
-              Center(
+              const Center(
                 child: Text(
                   'OR',
                   style: TextStyle(

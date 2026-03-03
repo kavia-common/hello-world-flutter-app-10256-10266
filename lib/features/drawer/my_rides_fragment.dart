@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ride_karo/shared/app_theme.dart';
 
 /// My Rides screen matching the Kotlin [MyRidesFragment].
 ///

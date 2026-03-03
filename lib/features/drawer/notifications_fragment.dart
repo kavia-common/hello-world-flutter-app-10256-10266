@@ -9,10 +9,7 @@ class NotificationsFragment extends StatelessWidget {
   /// Creates the notifications fragment widget.
   const NotificationsFragment({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    // Sample notifications matching the original app's style
-    final notifications = [
+  static const List<_NotificationItem> _notifications = [
       _NotificationItem(
         title: 'Ride Completed',
         message: 'Your ride to Bandra Station has been completed successfully.',
@@ -50,6 +47,11 @@ class NotificationsFragment extends StatelessWidget {
         color: Colors.teal,
       ),
     ];
+
+  @override
+  Widget build(BuildContext context) {
+    // Sample notifications matching the original app's style
+    const notifications = _notifications;
 
     return notifications.isEmpty
         ? const Center(
