@@ -1,0 +1,24 @@
+name: hello_world_frontend
+description: Pubspec root used by preview tooling; delegates to existing app sources.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Use the existing app's package code via a path dependency.
+  # The existing project is at the parent directory.
+  ride_karo:
+    path: ..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

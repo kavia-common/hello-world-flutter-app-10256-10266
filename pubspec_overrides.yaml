@@ -1,0 +1,4 @@
+# This file is intentionally present to support the hello_world_frontend wrapper pubspec.
+# It does not change dependencies by default, but exists so tooling that expects an overrides
+# file won't fail when operating from nested pubspec roots.
+dependency_overrides: {}
