@@ -51,38 +51,42 @@ class _OTPSecondScreenState extends State<OTPSecondScreen> {
           children: [
             // Yellow header banner — matches rlWelcomeScreen with
             // ic_rectangle_button background (solid yellow)
-            Container(
+            const SizedBox(
               width: double.infinity,
               height: 180,
-              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 28),
-              decoration: const BoxDecoration(
-                color: AppTheme.primaryYellow,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title — matches tvWelcome "Enter verification pin"
-                  const Text(
-                    'Enter verification pin',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'ProductSans',
-                      color: AppTheme.black,
-                    ),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryYellow,
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(left: 24, right: 24, bottom: 28),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Title — matches tvWelcome "Enter verification pin"
+                      Text(
+                        'Enter verification pin',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'ProductSans',
+                          color: AppTheme.black,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      // Subtitle — matches tvWelcomeChoose
+                      Text(
+                        "Hold Tight! Rider is on it's way to your location",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontFamily: 'ProductSans',
+                          color: AppTheme.black,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 6),
-                  // Subtitle — matches tvWelcomeChoose
-                  const Text(
-                    "Hold Tight! Rider is on it's way to your location",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontFamily: 'ProductSans',
-                      color: AppTheme.black,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
             // OTP input area

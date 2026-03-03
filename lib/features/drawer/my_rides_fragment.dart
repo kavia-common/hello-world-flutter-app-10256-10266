@@ -59,11 +59,11 @@ class MyRidesFragment extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Card(
+          const Card(
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.all(Radius.circular(12)),
             ),
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.all(16),
               child: Center(
                 child: Text(
@@ -95,20 +95,20 @@ class MyRidesFragment extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Status + date row
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.two_wheeler, size: 18, color: Colors.grey),
-                    const SizedBox(width: 6),
-                    const Text(
+                    Icon(Icons.two_wheeler, size: 18, color: Colors.grey),
+                    SizedBox(width: 6),
+                    Text(
                       'Bike Taxi',
                       style: TextStyle(fontSize: 13, color: Colors.grey),
                     ),
                   ],
                 ),
-                Text(date, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text('Today', style: TextStyle(fontSize: 12, color: Colors.grey)),
               ],
             ),
             const SizedBox(height: 8),
