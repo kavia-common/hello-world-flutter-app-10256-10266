@@ -56,7 +56,10 @@ yarn-error.log
 .dynamodb/
 .file_activity_report.json
 *.db
-core.*
+core
+
+# Android/Flutter: local machine SDK paths (must not be committed; breaks CI/preview)
+android/local.properties.*
 .core
 *.log
 post_process_status.lock
