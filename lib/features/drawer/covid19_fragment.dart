@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:ride_karo/shared/app_theme.dart';
 
 /// COVID-19 information screen matching the Kotlin [Covid19Fragment].
 ///

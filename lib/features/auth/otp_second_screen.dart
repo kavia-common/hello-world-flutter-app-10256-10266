@@ -58,12 +58,12 @@ class _OTPSecondScreenState extends State<OTPSecondScreen> {
               decoration: const BoxDecoration(
                 color: AppTheme.primaryYellow,
               ),
-              child: Column(
+              child: const Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Title — matches tvWelcome "Enter verification pin"
-                  const Text(
+                  Text(
                     'Enter verification pin',
                     style: TextStyle(
                       fontSize: 22,
@@ -72,11 +72,11 @@ class _OTPSecondScreenState extends State<OTPSecondScreen> {
                       color: AppTheme.black,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   // Subtitle — matches tvWelcomeChoose
                   Text(
                     "Hold Tight! Rider is on it's way to your location",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
                       fontFamily: 'ProductSans',
                       color: AppTheme.black,
@@ -119,7 +119,7 @@ class _OTPSecondScreenState extends State<OTPSecondScreen> {
                     ),
                     const SizedBox(height: 20),
                     // "Waiting for OTP" text — matches waiting_tv
-                    Text(
+                    const Text(
                       'Waiting for OTP',
                       style: TextStyle(
                         fontSize: 13,

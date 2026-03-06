@@ -13,28 +13,28 @@ class NotificationsFragment extends StatelessWidget {
   Widget build(BuildContext context) {
     // Sample notifications matching the original app's style
     final notifications = [
-      _NotificationItem(
+      const _NotificationItem(
         title: 'Ride Completed',
         message: 'Your ride to Bandra Station has been completed successfully.',
         time: 'Today',
         icon: Icons.check_circle,
         color: Colors.green,
       ),
-      _NotificationItem(
+      const _NotificationItem(
         title: 'Payment Successful',
         message: 'Payment of ₹50 has been processed.',
         time: 'Today',
         icon: Icons.payment,
         color: AppTheme.accentOrange,
       ),
-      _NotificationItem(
+      const _NotificationItem(
         title: 'Welcome to Ride Karo!',
         message: 'Thank you for choosing Ride Karo. Enjoy your first ride!',
         time: '1 day ago',
         icon: Icons.celebration,
         color: AppTheme.primaryYellow,
       ),
-      _NotificationItem(
+      const _NotificationItem(
         title: 'Refer and Earn',
         message:
             'Invite your friends and earn ₹50 for every successful referral.',
@@ -42,7 +42,7 @@ class NotificationsFragment extends StatelessWidget {
         icon: Icons.people,
         color: Colors.blue,
       ),
-      _NotificationItem(
+      const _NotificationItem(
         title: 'COVID-19 Safety',
         message: 'All riders wear masks and sanitize regularly. Stay safe!',
         time: '5 days ago',

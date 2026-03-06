@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ride_karo/shared/app_theme.dart';
 
 /// My Rides screen matching the Kotlin [MyRidesFragment].
 ///
@@ -99,11 +98,11 @@ class MyRidesFragment extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
+                const Row(
                   children: [
-                    const Icon(Icons.two_wheeler, size: 18, color: Colors.grey),
-                    const SizedBox(width: 6),
-                    const Text(
+                    Icon(Icons.two_wheeler, size: 18, color: Colors.grey),
+                    SizedBox(width: 6),
+                    Text(
                       'Bike Taxi',
                       style: TextStyle(fontSize: 13, color: Colors.grey),
                     ),
