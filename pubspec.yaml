@@ -1,5 +1,5 @@
-name: ride_karo
-description: "Ride Karo - Flutter migration of the Connected Living Android app"
+name: react_agent
+description: "ReAct Agent - Flutter migration of swift-ai-agent-demo-1905. Demonstrates the ReAct (Reasoning + Acting) AI agent pattern using OpenAI GPT models."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -9,18 +9,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
   cupertino_icons: ^1.0.8
-  shared_preferences: ^2.2.2
-  provider: ^6.1.1
-  google_maps_flutter: ^2.5.3
-  geolocator: ^10.1.0
-  geocoding: ^2.1.1
-  url_launcher: ^6.2.2
-  intl: ^0.19.0
   http: ^1.2.0
-  lottie: ^3.1.0
+  intl: ^0.19.0
+  path_provider: ^2.1.2
+  uuid: ^4.3.3
 
 dev_dependencies:
   flutter_test:
@@ -29,20 +22,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
-  assets:
-    - assets/animations/
-
-  fonts:
-    - family: LatoRegular
-      fonts:
-        - asset: assets/fonts/lato_regular.ttf
-    - family: LatoBold
-      fonts:
-        - asset: assets/fonts/lato_bold.ttf
-    - family: LatoBlack
-      fonts:
-        - asset: assets/fonts/lato_black.ttf
-    - family: ProductSans
-      fonts:
-        - asset: assets/fonts/product_sans_regular.ttf
