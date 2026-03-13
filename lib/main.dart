@@ -1,57 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:ride_karo/shared/app_theme.dart';
-import 'package:ride_karo/shared/preference_helper.dart';
-import 'package:ride_karo/shared/ride_state.dart';
-import 'package:ride_karo/shared/constants.dart';
-import 'package:ride_karo/features/auth/first_screen.dart';
-import 'package:ride_karo/features/auth/second_screen.dart';
 
-/// Main entry point for the Ride Karo Flutter app.
+import 'package:react_agent/features/react_agent/presentation/react_agent_screen.dart';
+
+/// Main entry point for the ReAct Agent Flutter app.
 ///
-/// This mirrors the Kotlin [MainActivity] which reads the loginCheck preference
-/// and routes to either [FirstScreen] or [SecondScreen].
-void main() async {
+/// This is a single-screen iOS app that demonstrates the ReAct
+/// (Reasoning + Acting) AI agent pattern using OpenAI GPT models.
+///
+/// The OpenAI API key is read at runtime via `--dart-define`:
+/// ```
+/// flutter run --dart-define=OPENAI_API_KEY=sk-...
+/// ```
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await PreferenceHelper.init();
-  runApp(const RideKaroApp());
+  runApp(const ReactAgentApp());
 }
 
 // PUBLIC_INTERFACE
-/// Root widget of the Ride Karo application.
-class RideKaroApp extends StatelessWidget {
+/// Root widget of the ReAct Agent application.
+///
+/// Uses a Material theme tuned for iOS look-and-feel with a single
+/// screen ([ReactAgentScreen]) and no navigation routes.
+class ReactAgentApp extends StatelessWidget {
   /// Creates the root app widget.
-  const RideKaroApp({super.key});
+  const ReactAgentApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => RideState(),
-      child: MaterialApp(
-        title: 'Ride Karo',
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        home: const _AppRouter(),
+    return MaterialApp(
+      title: 'ReAct Agent',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+          brightness: Brightness.light,
+        ),
+        fontFamily: '.SF Pro Text',
       ),
+      home: const ReactAgentScreen(),
     );
-  }
-}
-
-/// Initial routing widget that checks login state and navigates accordingly.
-/// Mirrors [MainActivity.onCreate] preference-based routing.
-class _AppRouter extends StatelessWidget {
-  const _AppRouter();
-
-  @override
-  Widget build(BuildContext context) {
-    // Matches Kotlin: if loginCheck is true (default), go to FirstScreen
-    // If false (already completed first run), go to SecondScreen
-    final bool loginCheck = PreferenceHelper.getBool(AppConstants.loginCheck);
-
-    if (loginCheck) {
-      return const FirstScreen();
-    } else {
-      return const SecondScreen();
-    }
   }
 }
