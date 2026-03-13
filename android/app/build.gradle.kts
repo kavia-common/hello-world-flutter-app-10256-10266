@@ -8,7 +8,9 @@ plugins {
 android {
     namespace = "com.froyo.ridekaro.ride_karo"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    // Pin NDK to the highest version required by transitive Flutter plugins (backward compatible).
+    // This prevents Gradle from failing when a plugin requires a newer NDK than flutter.ndkVersion.
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

@@ -47,9 +47,14 @@ class AgentService extends ChangeNotifier {
         final content = await _chatService.sendMessage(messages: _messages);
         _messages.add(ChatMessage(role: 'assistant', content: content));
         final thought = _extractContent(content, 'thought');
-        if (thought != null) _addStep(StepType.thought, thought);
+        if (thought != null) {
+          _addStep(StepType.thought, thought);
+        }
         final fa = _extractContent(content, 'final_answer');
-        if (fa != null) { _addStep(StepType.finalAnswer, fa); break; }
+        if (fa != null) {
+          _addStep(StepType.finalAnswer, fa);
+          break;
+        }
         final action = _extractContent(content, 'action');
         if (action != null) {
           _addStep(StepType.action, action);
@@ -61,9 +66,13 @@ class AgentService extends ChangeNotifier {
             _addStep(StepType.error, e.toString());
             _messages.add(ChatMessage(role: 'user', content: '<observation>Error: $e</observation>'));
           }
-        } else { throw const AgentException(AgentErrorType.noActionFound); }
+        } else {
+          throw const AgentException(AgentErrorType.noActionFound);
+        }
       }
-    } catch (e) { _addStep(StepType.error, e.toString()); }
+    } catch (e) {
+      _addStep(StepType.error, e.toString());
+    }
     isRunning = false; notifyListeners();
   }
 
@@ -74,48 +83,82 @@ class AgentService extends ChangeNotifier {
 
   void _setupTools() {
     _tools['read_file'] = AgentTool(name: 'read_file', description: 'Read contents of a file', action: (args) async {
-      if (args.isEmpty) throw const AgentException(AgentErrorType.executionError, 'File path required');
+      if (args.isEmpty) {
+        throw const AgentException(AgentErrorType.executionError, 'File path required');
+      }
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/${args.first}');
       try { return await file.readAsString(); }
       catch (e) { throw AgentException(AgentErrorType.executionError, 'Could not read file: $e'); }
     });
     _tools['write_to_file'] = AgentTool(name: 'write_to_file', description: 'Write content to a file', action: (args) async {
-      if (args.length < 2) throw const AgentException(AgentErrorType.executionError, 'File path and content required');
+      if (args.length < 2) {
+        throw const AgentException(AgentErrorType.executionError, 'File path and content required');
+      }
       final content = args[1].replaceAll(r'\n', '\n');
       final tempDir = await getTemporaryDirectory();
       final file = File('${tempDir.path}/${args[0]}');
-      try { await file.parent.create(recursive: true); await file.writeAsString(content); return 'Write successful'; }
-      catch (e) { throw AgentException(AgentErrorType.executionError, 'Could not write file: $e'); }
+      try {
+        await file.parent.create(recursive: true);
+        await file.writeAsString(content);
+        return 'Write successful';
+      } catch (e) {
+        throw AgentException(AgentErrorType.executionError, 'Could not write file: $e');
+      }
     });
     _tools['get_current_time'] = AgentTool(name: 'get_current_time', description: 'Get current date and time', action: (args) async {
       return DateFormat.yMMMd().add_jms().format(DateTime.now());
     });
     _tools['calculate'] = AgentTool(name: 'calculate', description: 'Perform simple mathematical calculations', action: (args) async {
-      if (args.isEmpty) throw const AgentException(AgentErrorType.executionError, 'Expression required');
+      if (args.isEmpty) {
+        throw const AgentException(AgentErrorType.executionError, 'Expression required');
+      }
       try {
         final result = _evaluateExpression(args.first);
-        if (result == result.truncateToDouble() && !result.isInfinite) return result.toInt().toString();
+        if (result == result.truncateToDouble() && !result.isInfinite) {
+          return result.toInt().toString();
+        }
         return result.toString();
-      } catch (_) { throw const AgentException(AgentErrorType.executionError, 'Invalid mathematical expression'); }
+      } catch (_) {
+        throw const AgentException(AgentErrorType.executionError, 'Invalid mathematical expression');
+      }
     });
   }
 
   double _evaluateExpression(String expr) {
     final tokens = _tokenize(expr); final it = _TI(tokens);
     final result = _pE(it);
-    if (it.h) throw FormatException('Unexpected: ${it.p}');
+    if (it.h) {
+      throw FormatException('Unexpected: ${it.p}');
+    }
     return result;
   }
   List<String> _tokenize(String e) {
-    final t = <String>[]; final b = StringBuffer();
+    final t = <String>[];
+    final b = StringBuffer();
     for (var i = 0; i < e.length; i++) {
       final c = e[i];
-      if (c == ' ') { if (b.isNotEmpty) { t.add(b.toString()); b.clear(); } continue; }
-      if ('+-*/()'.contains(c)) { if (b.isNotEmpty) { t.add(b.toString()); b.clear(); } t.add(c); }
-      else b.write(c);
+      if (c == ' ') {
+        if (b.isNotEmpty) {
+          t.add(b.toString());
+          b.clear();
+        }
+        continue;
+      }
+      if ('+-*/()'.contains(c)) {
+        if (b.isNotEmpty) {
+          t.add(b.toString());
+          b.clear();
+        }
+        t.add(c);
+      } else {
+        b.write(c);
+      }
     }
-    if (b.isNotEmpty) t.add(b.toString()); return t;
+    if (b.isNotEmpty) {
+      t.add(b.toString());
+    }
+    return t;
   }
   double _pE(_TI it) {
     var l = _pT(it);
@@ -128,38 +171,80 @@ class AgentService extends ChangeNotifier {
     return l;
   }
   double _pF(_TI it) {
-    if (it.h && it.p == '-') { it.n(); return -_pF(it); }
-    if (it.h && it.p == '(') { it.n(); final r = _pE(it); if (it.h && it.p == ')') it.n(); return r; }
-    if (!it.h) throw const FormatException('Unexpected end');
-    final t = it.n(); final v = double.tryParse(t);
-    if (v == null) throw FormatException('Invalid: $t'); return v;
+    if (it.h && it.p == '-') {
+      it.n();
+      return -_pF(it);
+    }
+    if (it.h && it.p == '(') {
+      it.n();
+      final r = _pE(it);
+      if (it.h && it.p == ')') {
+        it.n();
+      }
+      return r;
+    }
+    if (!it.h) {
+      throw const FormatException('Unexpected end');
+    }
+    final t = it.n();
+    final v = double.tryParse(t);
+    if (v == null) {
+      throw FormatException('Invalid: $t');
+    }
+    return v;
   }
 
   Future<String> _executeAction(String action) async {
     final parsed = _parseAction(action);
     final tool = _tools[parsed.$1];
-    if (tool == null) throw AgentException(AgentErrorType.toolNotFound, parsed.$1);
+    if (tool == null) {
+      throw AgentException(AgentErrorType.toolNotFound, parsed.$1);
+    }
     return tool.action(parsed.$2);
   }
   (String, List<String>) _parseAction(String action) {
     final trimmed = action.trim();
     final wa = RegExp(r'^(\w+)\((.*)\)$', dotAll: true).firstMatch(trimmed);
-    if (wa != null) return (wa.group(1)!, _parseArguments(wa.group(2)!));
+    if (wa != null) {
+      return (wa.group(1)!, _parseArguments(wa.group(2)!));
+    }
     final na = RegExp(r'^(\w+)$').firstMatch(trimmed);
-    if (na != null) return (na.group(1)!, <String>[]);
+    if (na != null) {
+      return (na.group(1)!, <String>[]);
+    }
     throw const AgentException(AgentErrorType.invalidActionFormat);
   }
   List<String> _parseArguments(String s) {
-    final args = <String>[]; final cur = StringBuffer(); var inQ = false; var qc = '"';
+    final args = <String>[];
+    final cur = StringBuffer();
+    var inQ = false;
+    var qc = '"';
     for (var i = 0; i < s.length; i++) {
       final c = s[i];
       if (!inQ) {
-        if (c == '"' || c == "'") { inQ = true; qc = c; }
-        else if (c == ',') { args.add(cur.toString().trim()); cur.clear(); continue; }
-        else cur.write(c);
-      } else { if (c == qc) inQ = false; else cur.write(c); }
+        if (c == '"' || c == "'") {
+          inQ = true;
+          qc = c;
+        } else if (c == ',') {
+          args.add(cur.toString().trim());
+          cur.clear();
+          continue;
+        } else {
+          cur.write(c);
+        }
+      } else {
+        if (c == qc) {
+          inQ = false;
+        } else {
+          cur.write(c);
+        }
+      }
     }
-    final rem = cur.toString().trim(); if (rem.isNotEmpty) args.add(rem); return args;
+    final rem = cur.toString().trim();
+    if (rem.isNotEmpty) {
+      args.add(rem);
+    }
+    return args;
   }
   String? _extractContent(String text, String tag) {
     return RegExp('<$tag>(.*?)</$tag>', dotAll: true).firstMatch(text)?.group(1)?.trim();
