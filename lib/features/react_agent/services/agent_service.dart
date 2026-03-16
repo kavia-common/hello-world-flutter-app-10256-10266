@@ -2,9 +2,12 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:react_agent/config/config.dart';
 import 'package:react_agent/features/react_agent/domain/agent_step.dart';
 import 'package:react_agent/features/react_agent/domain/agent_tool.dart';
 import 'package:react_agent/features/react_agent/domain/chat_message.dart';
+import 'package:react_agent/features/react_agent/services/chat_service.dart';
+import 'package:react_agent/features/react_agent/services/mock_chat_service.dart';
 import 'package:react_agent/features/react_agent/services/openai_chat_service.dart';
 
 enum AgentErrorType { noActionFound, toolNotFound, invalidActionFormat, executionError }
@@ -28,9 +31,26 @@ class AgentException implements Exception {
 // PUBLIC_INTERFACE
 /// The core ReAct agent loop service.
 class AgentService extends ChangeNotifier {
-  AgentService({OpenAIChatService? chatService})
-      : _chatService = chatService ?? OpenAIChatService() { _setupTools(); }
-  final OpenAIChatService _chatService;
+  /// Creates an [AgentService].
+  ///
+  /// If [chatService] is not provided, the service auto-selects:
+  /// - [OpenAIChatService] when `OPENAI_API_KEY` is set
+  /// - [MockChatService] when no API key is present (offline/mock mode)
+  AgentService({ChatService? chatService})
+      : _chatService = chatService ?? _defaultChatService() {
+    _setupTools();
+  }
+
+  final ChatService _chatService;
+
+  static ChatService _defaultChatService() {
+    // `Config.apiKey` is injected via --dart-define. In preview/CI this is
+    // typically absent, and we should still allow the demo UI to work.
+    if (Config.apiKey.trim().isEmpty) {
+      return MockChatService();
+    }
+    return OpenAIChatService();
+  }
   List<AgentStep> steps = [];
   bool isRunning = false;
   final Map<String, AgentTool> _tools = {};

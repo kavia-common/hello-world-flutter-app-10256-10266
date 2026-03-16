@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:react_agent/config/config.dart';
 import 'package:react_agent/features/react_agent/domain/chat_message.dart';
+import 'package:react_agent/features/react_agent/services/chat_service.dart';
 
 /// Errors from the OpenAI API.
 enum ChatGPTError {
@@ -41,7 +42,7 @@ class ChatGPTException implements Exception {
 
 /// Service that communicates with the OpenAI Chat Completions API.
 // PUBLIC_INTERFACE
-class OpenAIChatService {
+class OpenAIChatService implements ChatService {
   /// Creates an [OpenAIChatService].
   OpenAIChatService({http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();
@@ -53,6 +54,7 @@ class OpenAIChatService {
 
   /// Sends [messages] to OpenAI and returns assistant content.
   // PUBLIC_INTERFACE
+  @override
   Future<String> sendMessage({required List<ChatMessage> messages}) async {
     final uri = Uri.tryParse(_baseURL);
     if (uri == null) {
