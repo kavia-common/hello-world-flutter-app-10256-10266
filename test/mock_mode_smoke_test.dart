@@ -1,0 +1,38 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:react_agent/main.dart';
+
+void main() {
+  testWidgets(
+    'Mock mode (no OPENAI_API_KEY) runs and produces timeline steps',
+    (WidgetTester tester) async {
+      await tester.pumpWidget(const ReactAgentApp());
+
+      // Enter a question so the Start Agent button enables.
+      await tester.enterText(
+        find.byType(TextField),
+        'What time is it? (mock mode smoke test)',
+      );
+
+      // Pump once to rebuild with enabled Start Agent.
+      await tester.pump();
+
+      // Tap Start Agent.
+      await tester.tap(find.text('Start Agent'));
+
+      // Let the async loop run. MockChatService returns action then final answer.
+      await tester.pump(const Duration(milliseconds: 50));
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+
+      // Step titles include emoji prefixes; match by substring.
+      expect(find.textContaining('Thought'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('Action'), findsAtLeastNWidgets(1));
+      expect(find.textContaining('Final Answer'), findsAtLeastNWidgets(1));
+
+      // Also assert the deterministic mock final answer content.
+      expect(
+        find.textContaining('Mock mode is working'),
+        findsOneWidget,
+      );
+    },
+  );
+}
