@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:react_agent/main.dart';
 
@@ -28,9 +29,11 @@ void main() {
       expect(find.textContaining('Action'), findsAtLeastNWidgets(1));
       expect(find.textContaining('Final Answer'), findsAtLeastNWidgets(1));
 
-      // Also assert the deterministic mock final answer content.
+      // Assert the final answer is derived from the actual user prompt
+      // (not a generic placeholder).
+      expect(find.textContaining('Offline (mock) answer:'), findsOneWidget);
       expect(
-        find.textContaining('Mock mode is working'),
+        find.textContaining('What time is it? (mock mode smoke test)'),
         findsOneWidget,
       );
     },
