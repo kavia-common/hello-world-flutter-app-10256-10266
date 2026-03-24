@@ -15,11 +15,13 @@ class ReactAgentController extends ChangeNotifier {
   String userInput = '';
   List<AgentStep> steps = [];
   bool isRunning = false;
+  bool isMockMode = false;
   String? errorMessage;
 
   void _onAgentChanged() {
     steps = _agentService.steps;
     isRunning = _agentService.isRunning;
+    isMockMode = _agentService.isMockMode;
     notifyListeners();
   }
 

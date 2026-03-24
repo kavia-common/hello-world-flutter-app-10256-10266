@@ -59,6 +59,14 @@ class AgentService extends ChangeNotifier {
   List<ChatMessage> _messages = [];
 
   // PUBLIC_INTERFACE
+  /// True when the agent is using the local deterministic [MockChatService]
+  /// instead of the OpenAI-backed chat service.
+  ///
+  /// This is used for in-app diagnostics (debug overlay) and does not affect
+  /// behavior.
+  bool get isMockMode => _chatService is MockChatService;
+
+  // PUBLIC_INTERFACE
   /// Resets the agent state (timeline, message history, and running flag).
   ///
   /// This is used by the UI "Clear" button to ensure both controller and service

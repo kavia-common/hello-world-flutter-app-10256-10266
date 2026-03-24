@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:react_agent/features/react_agent/domain/agent_step.dart';
 import 'package:react_agent/features/react_agent/presentation/react_agent_controller.dart';
 import 'package:react_agent/features/react_agent/presentation/widgets/step_card.dart';
 
@@ -15,6 +18,8 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
   late final TextEditingController _textCtrl;
   late final ScrollController _scrollCtrl;
   int _prevCount = 0;
+
+  bool _showDebugPanel = false;
 
   @override
   void initState() {
@@ -60,6 +65,12 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
     setState(() {});
   }
 
+  void _toggleDebugPanel() {
+    setState(() {
+      _showDebugPanel = !_showDebugPanel;
+    });
+  }
+
   @override
   void dispose() {
     _ctrl.removeListener(_onChanged);
@@ -87,12 +98,17 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
           ),
         ),
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              _buildHeader(context),
-              Expanded(
-                child: _ctrl.steps.isNotEmpty ? _buildSteps() : _buildEmpty(context),
+              Column(
+                children: [
+                  _buildHeader(context),
+                  Expanded(
+                    child: _ctrl.steps.isNotEmpty ? _buildSteps() : _buildEmpty(context),
+                  ),
+                ],
               ),
+              if (_showDebugPanel) _DebugOverlayPanel(controller: _ctrl),
             ],
           ),
         ),
@@ -105,126 +121,139 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              scheme.surfaceContainerHighest.withAlpha(210),
-              scheme.surface.withAlpha(210),
+      child: GestureDetector(
+        // Toggle: long-press anywhere on the header card.
+        onLongPress: _toggleDebugPanel,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                scheme.surfaceContainerHighest.withAlpha(210),
+                scheme.surface.withAlpha(210),
+              ],
+            ),
+            border: Border.all(color: scheme.outline.withAlpha(80)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withAlpha(90),
+                blurRadius: 18,
+                offset: const Offset(0, 10),
+              ),
             ],
           ),
-          border: Border.all(color: scheme.outline.withAlpha(80)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(90),
-              blurRadius: 18,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                    gradient: LinearGradient(
-                      colors: [
-                        scheme.primary.withAlpha(230),
-                        scheme.tertiary.withAlpha(210),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: LinearGradient(
+                        colors: [
+                          scheme.primary.withAlpha(230),
+                          scheme.tertiary.withAlpha(210),
+                        ],
+                      ),
+                    ),
+                    child: const Icon(Icons.psychology, color: Colors.white, size: 22),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'ReAct Agent',
+                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                color: scheme.onSurface,
+                              ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Watch the agent reason, act with tools, and answer.',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: scheme.onSurface.withAlpha(160),
+                              ),
+                        ),
                       ],
                     ),
                   ),
-                  child: const Icon(Icons.psychology, color: Colors.white, size: 22),
+                  if (_showDebugPanel)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Icon(
+                        Icons.bug_report,
+                        size: 18,
+                        color: scheme.onSurface.withAlpha(170),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              TextField(
+                controller: _textCtrl,
+                minLines: 3,
+                maxLines: 6,
+                onChanged: (v) => _ctrl.setUserInput(v),
+                decoration: const InputDecoration(
+                  hintText: 'Enter your question or task...',
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: _ctrl.isRunning ? null : () => _ctrl.clearSteps(),
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('Clear'),
+                  ),
+                  const Spacer(),
+                  _PrimaryActionButton(
+                    isRunning: _ctrl.isRunning,
+                    enabled: !_ctrl.isRunning && _ctrl.userInput.trim().isNotEmpty,
+                    onPressed: () {
+                      // Fire-and-forget; controller internally awaits service.
+                      _ctrl.startAgent();
+                    },
+                  ),
+                ],
+              ),
+              if (_ctrl.errorMessage != null) ...[
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: scheme.error.withAlpha(22),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: scheme.error.withAlpha(90)),
+                  ),
+                  child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'ReAct Agent',
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              color: scheme.onSurface,
-                            ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Watch the agent reason, act with tools, and answer.',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: scheme.onSurface.withAlpha(160),
-                            ),
+                      Icon(Icons.error_outline, color: scheme.error, size: 18),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _ctrl.errorMessage!,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: scheme.onSurface,
+                              ),
+                        ),
                       ),
                     ],
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: _textCtrl,
-              minLines: 3,
-              maxLines: 6,
-              onChanged: (v) => _ctrl.setUserInput(v),
-              decoration: const InputDecoration(
-                hintText: 'Enter your question or task...',
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                OutlinedButton.icon(
-                  onPressed: _ctrl.isRunning ? null : () => _ctrl.clearSteps(),
-                  icon: const Icon(Icons.refresh, size: 18),
-                  label: const Text('Clear'),
-                ),
-                const Spacer(),
-                _PrimaryActionButton(
-                  isRunning: _ctrl.isRunning,
-                  enabled: !_ctrl.isRunning && _ctrl.userInput.trim().isNotEmpty,
-                  onPressed: () {
-                    // Fire-and-forget; controller internally awaits service.
-                    _ctrl.startAgent();
-                  },
-                ),
-              ],
-            ),
-            if (_ctrl.errorMessage != null) ...[
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: scheme.error.withAlpha(22),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: scheme.error.withAlpha(90)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(Icons.error_outline, color: scheme.error, size: 18),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        _ctrl.errorMessage!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: scheme.onSurface,
-                            ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -291,6 +320,261 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DebugOverlayPanel extends StatelessWidget {
+  const _DebugOverlayPanel({required this.controller});
+
+  final ReactAgentController controller;
+
+  String _firstLine(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty) return '';
+    final idx = trimmed.indexOf('\n');
+    return (idx == -1 ? trimmed : trimmed.substring(0, idx)).trim();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Positioned(
+      left: 12,
+      right: 12,
+      bottom: 12,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              constraints: const BoxConstraints(maxHeight: 260),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHighest.withAlpha(230),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: scheme.outline.withAlpha(100)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(110),
+                    blurRadius: 22,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.bug_report, size: 18, color: scheme.onSurface.withAlpha(200)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Debug',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  color: scheme.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ),
+                        Text(
+                          'long-press header to hide',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurface.withAlpha(150),
+                              ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
+                      children: [
+                        _DebugChip(
+                          label: 'isRunning',
+                          value: controller.isRunning.toString(),
+                        ),
+                        _DebugChip(
+                          label: 'isMockMode',
+                          value: controller.isMockMode.toString(),
+                        ),
+                        _DebugChip(
+                          label: 'steps',
+                          value: controller.steps.length.toString(),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: controller.steps.isEmpty
+                          ? Text(
+                              '(no steps yet)',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: scheme.onSurface.withAlpha(170),
+                                  ),
+                            )
+                          : ListView.separated(
+                              itemCount: controller.steps.length,
+                              separatorBuilder: (_, __) => Divider(
+                                height: 12,
+                                color: scheme.outline.withAlpha(60),
+                              ),
+                              itemBuilder: (context, index) {
+                                final AgentStep s = controller.steps[index];
+                                final title = controller.getStepTitle(s.type);
+                                final first = _firstLine(s.content);
+
+                                return DefaultTextStyle(
+                                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                                        color: scheme.onSurface.withAlpha(210),
+                                      ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        '${index + 1}.',
+                                        style: TextStyle(color: scheme.onSurface.withAlpha(140)),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '${s.type.name} • $title',
+                                              style: TextStyle(
+                                                color: scheme.onSurface,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            if (first.isNotEmpty) ...[
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                first,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: TextStyle(
+                                                  color: scheme.onSurface.withAlpha(175),
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DebugChip extends StatelessWidget {
+  const _DebugChip({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: scheme.surface.withAlpha(220),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: scheme.outline.withAlpha(70)),
+      ),
+      child: Text(
+        '$label: $value',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: scheme.onSurface,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+      ),
+    );
+  }
+}
+
+class _PrimaryActionButton extends StatelessWidget {
+  const _PrimaryActionButton({
+    required this.isRunning,
+    required this.enabled,
+    required this.onPressed,
+  });
+
+  final bool isRunning;
+  final bool enabled;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    // Use a decorated container + transparent ElevatedButton for a "premium" gradient CTA.
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: enabled
+            ? LinearGradient(
+                colors: [
+                  scheme.primary.withAlpha(240),
+                  scheme.tertiary.withAlpha(220),
+                ],
+              )
+            : LinearGradient(
+                colors: [
+                  scheme.primary.withAlpha(90),
+                  scheme.tertiary.withAlpha(70),
+                ],
+              ),
+        boxShadow: enabled
+            ? [
+                BoxShadow(
+                  color: scheme.primary.withAlpha(55),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : const [],
+      ),
+      child: ElevatedButton(
+        onPressed: enabled ? onPressed : null,
+        style: ButtonStyle(
+          backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
+          shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+          foregroundColor: WidgetStatePropertyAll(scheme.onPrimary),
+        ),
+        child: isRunning
+            ? const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  SizedBox(width: 10),
+                  Text('Agent is thinking...'),
+                ],
+              )
+            : const Text('Start Agent'),
       ),
     );
   }
