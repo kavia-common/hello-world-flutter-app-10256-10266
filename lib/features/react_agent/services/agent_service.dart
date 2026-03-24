@@ -100,8 +100,11 @@ class AgentService extends ChangeNotifier {
 
     // In mock mode, ensure each run starts from turn 0 so the timeline always
     // includes Thought -> Action -> Observation -> Final Answer.
+    //
+    // NOTE: We intentionally do not change the ChatService interface; we only
+    // reset when we *know* this is the MockChatService.
     if (isMockMode) {
-      _chatService.reset();
+      (_chatService as MockChatService).reset();
     }
 
     isRunning = true;
