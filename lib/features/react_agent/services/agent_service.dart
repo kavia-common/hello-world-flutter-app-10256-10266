@@ -84,9 +84,23 @@ class AgentService extends ChangeNotifier {
     // Clear/reset, or another run started).
     bool isStale() => runId != _activeRunId;
 
+    // Mock-mode only: allow a deterministic small yield after intermediate step
+    // additions so widgets/tests can observe Action/Observation before the loop
+    // continues to the next await and potentially completes extremely quickly.
+    //
+    // IMPORTANT: Do not change Live mode behavior.
+    final bool isMockMode = _chatService is MockChatService;
+    Future<void> yieldForMockUI() async {
+      if (!isMockMode) return;
+
+      // Yield at least one event-loop tick. This is intentionally tiny so
+      // mock mode still feels instant, but steps become reliably renderable.
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+    }
+
     // In mock mode, ensure each run starts from turn 0 so the timeline always
     // includes Thought -> Action -> Observation -> Final Answer.
-    if (_chatService is MockChatService) {
+    if (isMockMode) {
       _chatService.reset();
     }
 
@@ -111,6 +125,8 @@ class AgentService extends ChangeNotifier {
         final thought = _extractContent(content, 'thought');
         if (thought != null) {
           _addStep(StepType.thought, thought);
+          await yieldForMockUI();
+          if (isStale()) return;
         }
 
         final fa = _extractContent(content, 'final_answer');
@@ -122,11 +138,17 @@ class AgentService extends ChangeNotifier {
         final action = _extractContent(content, 'action');
         if (action != null) {
           _addStep(StepType.action, action);
+          await yieldForMockUI();
+          if (isStale()) return;
+
           try {
             final obs = await _executeAction(action);
             if (isStale()) return;
 
             _addStep(StepType.observation, obs);
+            await yieldForMockUI();
+            if (isStale()) return;
+
             _messages.add(
               ChatMessage(
                 role: 'user',
@@ -137,6 +159,9 @@ class AgentService extends ChangeNotifier {
             if (isStale()) return;
 
             _addStep(StepType.error, e.toString());
+            await yieldForMockUI();
+            if (isStale()) return;
+
             _messages.add(
               ChatMessage(
                 role: 'user',
