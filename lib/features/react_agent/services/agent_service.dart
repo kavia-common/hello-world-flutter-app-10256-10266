@@ -84,6 +84,12 @@ class AgentService extends ChangeNotifier {
     // Clear/reset, or another run started).
     bool isStale() => runId != _activeRunId;
 
+    // In mock mode, ensure each run starts from turn 0 so the timeline always
+    // includes Thought -> Action -> Observation -> Final Answer.
+    if (_chatService is MockChatService) {
+      _chatService.reset();
+    }
+
     isRunning = true;
     steps = [];
     _messages = [];
