@@ -9,10 +9,7 @@ void main() {
       await tester.pumpWidget(const ReactAgentApp());
 
       // Enter a question so the Start Agent button enables.
-      await tester.enterText(
-        find.byType(TextField),
-        'Show me multiple steps',
-      );
+      await tester.enterText(find.byType(TextField), 'Show me multiple steps');
       await tester.pump();
 
       // Tap Start Agent.

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 
@@ -113,9 +114,10 @@ class OpenAIChatService implements ChatService {
 
     // Convert chat messages to a single prompt for Responses API.
     // We preserve roles in a readable way.
-    final prompt = messages
-        .map((m) => '${m.role.toUpperCase()}: ${m.content}')
-        .join('\n\n');
+    final prompt =
+        messages.map((m) => '${m.role.toUpperCase()}: ${m.content}').join(
+              '\n\n',
+            );
 
     final requestBody = jsonEncode({
       'model': _model,
@@ -147,14 +149,27 @@ class OpenAIChatService implements ChatService {
         details: 'Request timed out. Verify network connectivity and try again.',
       );
     } catch (e) {
-      throw ChatGPTException(ChatGPTError.networkError, details: e.toString());
+      // IMPORTANT:
+      // In Live mode, failures frequently occur before any HTTP response exists
+      // (DNS, TLS handshake, socket connect). `http` wraps some of these in a
+      // ClientException whose message contains a generic "OS Error".
+      // We unwrap common underlying exceptions so the UI shows actionable text.
+      throw ChatGPTException(
+        ChatGPTError.networkError,
+        details: _describeNetworkFailure(e),
+      );
     }
 
     if (response.statusCode < 200 || response.statusCode > 299) {
       final detail = _extractOpenAIErrorDetail(response);
+      final snippet = _extractBodySnippet(response.body);
+      final combined = snippet == null || snippet.isEmpty
+          ? detail
+          : '$detail\n\nResponse body (first 600 chars):\n$snippet';
+
       throw ChatGPTException(
         ChatGPTError.invalidResponse,
-        details: 'HTTP ${response.statusCode}: $detail',
+        details: 'HTTP ${response.statusCode}: $combined',
       );
     }
 
@@ -216,6 +231,50 @@ class OpenAIChatService implements ChatService {
     if (raw.isEmpty) return 'Empty error response from server.';
     // Avoid dumping huge bodies.
     return raw.length > 600 ? raw.substring(0, 600) : raw;
+  }
+
+  String? _extractBodySnippet(String body) {
+    final trimmed = body.trim();
+    if (trimmed.isEmpty) return null;
+    return trimmed.length > 600 ? trimmed.substring(0, 600) : trimmed;
+  }
+
+  String _describeNetworkFailure(Object error) {
+    // Best-effort unwrapping of common failure shapes from package:http:
+    // - SocketException: DNS lookup failed, connection refused, etc.
+    // - HandshakeException: TLS handshake failures
+    // - ClientException: sometimes wraps the above in message text.
+    if (error is SocketException) {
+      final addr = error.address?.address;
+      final port = error.port;
+      final target = [
+        if (addr != null && addr.trim().isNotEmpty) addr,
+        if (port != null) 'port=$port',
+      ].join(' ');
+      final osMsg = error.osError?.message;
+
+      return [
+        'SocketException: ${error.message}',
+        if (target.isNotEmpty) 'Target: $target',
+        if (osMsg != null && osMsg.trim().isNotEmpty) 'OS: $osMsg',
+      ].join('\n');
+    }
+
+    if (error is HandshakeException) {
+      return 'TLS HandshakeException: ${error.message}';
+    }
+
+    if (error is http.ClientException) {
+      // Try to pull out nested context if present in the message.
+      // Example includes: "ClientException: ... (OS Error: ... , errno = ...)"
+      final uri = error.uri?.toString();
+      return [
+        'ClientException: ${error.message}',
+        if (uri != null && uri.trim().isNotEmpty) 'URL: $uri',
+      ].join('\n');
+    }
+
+    return error.toString();
   }
 
   String? _extractTextFromResponsesOutput(Map<String, dynamic> decoded) {
