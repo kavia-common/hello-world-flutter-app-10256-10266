@@ -1,4 +1,0 @@
-#Mon Mar 23 06:34:12 UTC 2026
-base.0=/home/kavia/workspace/code-generation/hello-world-flutter-app-10256-10266/build/app/intermediates/dex/release/minifyReleaseWithR8/classes.dex
-renamed.0=classes.dex
-path.0=classes.dex
