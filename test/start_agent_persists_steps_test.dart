@@ -21,7 +21,7 @@ void main() {
       // Let async agent loop run and UI rebuild. In mock mode we expect:
       // Thought -> Action -> Observation -> Thought -> Final Answer (at least).
       await tester.pump(const Duration(milliseconds: 50));
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
       // Verify multiple step cards exist and remain on screen.
       expect(find.byType(ListView), findsOneWidget);

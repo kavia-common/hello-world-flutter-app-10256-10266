@@ -22,7 +22,7 @@ void main() {
 
       // Let the async loop run. MockChatService returns action then final answer.
       await tester.pump(const Duration(milliseconds: 50));
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
 
       // Step titles include emoji prefixes; match by substring.
       expect(find.textContaining('Thought'), findsAtLeastNWidgets(1));

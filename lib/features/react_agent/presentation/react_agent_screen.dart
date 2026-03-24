@@ -190,7 +190,10 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                 _PrimaryActionButton(
                   isRunning: _ctrl.isRunning,
                   enabled: !_ctrl.isRunning && _ctrl.userInput.trim().isNotEmpty,
-                  onPressed: () => _ctrl.startAgent(),
+                  onPressed: () {
+                    // Fire-and-forget; controller internally awaits service.
+                    _ctrl.startAgent();
+                  },
                 ),
               ],
             ),

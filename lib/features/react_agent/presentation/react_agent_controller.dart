@@ -22,10 +22,19 @@ class ReactAgentController extends ChangeNotifier {
   }
 
   // PUBLIC_INTERFACE
-  void startAgent() {
-    if (userInput.trim().isEmpty) { errorMessage = 'Please enter a question or task.'; notifyListeners(); return; }
-    errorMessage = null; notifyListeners();
-    _agentService.runAgent(userInput);
+  Future<void> startAgent() async {
+    if (userInput.trim().isEmpty) {
+      errorMessage = 'Please enter a question or task.';
+      notifyListeners();
+      return;
+    }
+
+    errorMessage = null;
+    notifyListeners();
+
+    // Await to prevent overlapping runs in preview/rapid taps and to keep
+    // running state transitions consistent.
+    await _agentService.runAgent(userInput);
   }
 
   // PUBLIC_INTERFACE

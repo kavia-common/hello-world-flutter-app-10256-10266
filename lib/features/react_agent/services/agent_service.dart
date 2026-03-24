@@ -31,6 +31,7 @@ class AgentException implements Exception {
 // PUBLIC_INTERFACE
 /// The core ReAct agent loop service.
 class AgentService extends ChangeNotifier {
+  int _activeRunId = 0;
   /// Creates an [AgentService].
   ///
   /// If [chatService] is not provided, the service auto-selects:
@@ -65,13 +66,22 @@ class AgentService extends ChangeNotifier {
   void reset() {
     steps = [];
     _messages = [];
+    // If another run started while we were awaiting network/tool work,
+    // do not overwrite its state.
+    if (runId != _activeRunId) {
+      return;
+    }
+
     isRunning = false;
     notifyListeners();
   }
 
   // PUBLIC_INTERFACE
   Future<void> runAgent(String userInput) async {
+    final runId = ++_activeRunId;
+
     isRunning = true;
+    // Only clear steps for the currently active run.
     steps = [];
     _messages = [];
     notifyListeners();
