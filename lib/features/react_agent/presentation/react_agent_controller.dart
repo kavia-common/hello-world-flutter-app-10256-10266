@@ -29,7 +29,13 @@ class ReactAgentController extends ChangeNotifier {
   }
 
   // PUBLIC_INTERFACE
-  void clearSteps() { steps = []; errorMessage = null; userInput = ''; notifyListeners(); }
+  void clearSteps() {
+    _agentService.reset();
+    steps = [];
+    errorMessage = null;
+    userInput = '';
+    notifyListeners();
+  }
 
   void setUserInput(String value) { userInput = value; notifyListeners(); }
 

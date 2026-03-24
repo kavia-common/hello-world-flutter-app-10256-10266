@@ -13,6 +13,7 @@
 
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Black.NoTitleBar">
-        <item name="android:windowBackground">?android:colorBackground</item>
+        <!-- Neutral dark grey while Flutter initializes (less harsh than pure black) -->
+        <item name="android:windowBackground">#FF111827</item>
     </style>
 </resources>

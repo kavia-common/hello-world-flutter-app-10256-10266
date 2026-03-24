@@ -17,28 +17,35 @@ void main() {
 }
 
 class _AppTheme {
-  static const Color _seed = Color(0xFF7C4DFF); // deep violet
-  static const Color _bg = Color(0xFF0B0E14); // near-black blue
-  static const Color _surface = Color(0xFF111827); // slate
-  static const Color _surface2 = Color(0xFF0F172A); // darker slate
+  // Lighter grey theme with high contrast text for readability.
+  static const Color _seed = Color(0xFF7C4DFF); // deep violet (kept as primary seed)
 
-  static ThemeData dark() {
+  // Light greys (not pure white) to reduce glare while staying readable.
+  static const Color _bg = Color(0xFFF2F4F7); // app background
+  static const Color _surface = Color(0xFFFFFFFF); // cards / surfaces
+  static const Color _surface2 = Color(0xFFE9EDF3); // elevated containers / inputs
+
+  static ThemeData lightGrey() {
     final scheme = ColorScheme.fromSeed(
       seedColor: _seed,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
     ).copyWith(
-      // Ensure a rich dark palette (Material3 uses "surface" a lot).
+      // Material3 uses "surface" heavily; keep it clean and readable.
       surface: _surface,
       surfaceContainerHighest: _surface2,
+      // Ensure onSurface is dark enough for text contrast.
+      onSurface: const Color(0xFF111827),
+      onSurfaceVariant: const Color(0xFF374151),
+      outline: const Color(0xFFCBD5E1),
     );
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: _bg,
 
-      // Keep the existing iOS-ish feel, but make it look more premium in dark mode.
+      // Keep the existing iOS-ish font choice.
       fontFamily: '.SF Pro Text',
 
       textTheme: const TextTheme(
@@ -53,18 +60,18 @@ class _AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: scheme.surfaceContainerHighest,
-        hintStyle: TextStyle(color: scheme.onSurface.withAlpha(140)),
+        hintStyle: TextStyle(color: scheme.onSurfaceVariant.withAlpha(150)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: scheme.outline.withAlpha(110)),
+          borderSide: BorderSide(color: scheme.outline.withAlpha(200)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: scheme.outline.withAlpha(110)),
+          borderSide: BorderSide(color: scheme.outline.withAlpha(200)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: scheme.primary.withAlpha(210), width: 1.4),
+          borderSide: BorderSide(color: scheme.primary.withAlpha(230), width: 1.4),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
@@ -80,6 +87,9 @@ class _AppTheme {
           textStyle: const WidgetStatePropertyAll(
             TextStyle(fontWeight: FontWeight.w700),
           ),
+          // Ensure buttons remain readable on the primary color.
+          foregroundColor: WidgetStatePropertyAll(scheme.onPrimary),
+          backgroundColor: WidgetStatePropertyAll(scheme.primary),
         ),
       ),
 
@@ -92,8 +102,9 @@ class _AppTheme {
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
           side: WidgetStatePropertyAll(
-            BorderSide(color: scheme.outline.withAlpha(120)),
+            BorderSide(color: scheme.outline.withAlpha(220)),
           ),
+          foregroundColor: WidgetStatePropertyAll(scheme.onSurface),
           textStyle: const WidgetStatePropertyAll(
             TextStyle(fontWeight: FontWeight.w700),
           ),
@@ -108,7 +119,7 @@ class _AppTheme {
       ),
 
       dividerTheme: DividerThemeData(
-        color: scheme.outline.withAlpha(90),
+        color: scheme.outline.withAlpha(160),
         thickness: 1,
         space: 1,
       ),
@@ -129,7 +140,7 @@ class ReactAgentApp extends StatelessWidget {
     return MaterialApp(
       title: 'ReAct Agent',
       debugShowCheckedModeBanner: false,
-      theme: _AppTheme.dark(),
+      theme: _AppTheme.lightGrey(),
       home: const ReactAgentScreen(),
     );
   }

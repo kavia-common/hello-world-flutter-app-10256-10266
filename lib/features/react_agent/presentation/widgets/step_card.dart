@@ -42,7 +42,12 @@ class StepCard extends StatelessWidget {
         ],
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        // IMPORTANT:
+        // Using `stretch` here can propagate an unbounded (infinite) height from
+        // Sliver/ListView constraints in widget tests and some embedders,
+        // triggering "BoxConstraints forces an infinite height" and preventing
+        // the timeline from rendering (appearing as a brief flicker then empty).
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Accent stripe to give a "timeline" feel.
           Container(
