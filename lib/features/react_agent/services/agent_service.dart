@@ -104,7 +104,8 @@ class AgentService extends ChangeNotifier {
     // NOTE: We intentionally do not change the ChatService interface; we only
     // reset when we *know* this is the MockChatService.
     if (isMockMode) {
-      (_chatService as MockChatService).reset();
+      // Type promotion applies because the check is on the same variable.
+      _chatService.reset();
     }
 
     isRunning = true;
