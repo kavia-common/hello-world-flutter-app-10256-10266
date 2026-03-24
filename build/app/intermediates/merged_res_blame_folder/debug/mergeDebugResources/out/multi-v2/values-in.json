@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.froyo.ridekaro.ride_karo.app-mergeDebugResources-24:/values-in/values-in.xml",
+            "outputFile": "com.froyo.ridekaro.ride_karo.app-mergeDebugResources-25:/values-in/values-in.xml",
             "map": [
                 {
                     "source": "/home/kavia/.gradle/caches/8.10.2/transforms/dfc2fbca530748e569b0737b09fa016f/transformed/core-1.13.1/res/values-in/values-in.xml",

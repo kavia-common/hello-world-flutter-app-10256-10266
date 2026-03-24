@@ -14,6 +14,20 @@ import 'package:react_agent/features/react_agent/services/chat_service.dart';
 class MockChatService implements ChatService {
   int _turn = 0;
 
+  // PUBLIC_INTERFACE
+  /// Resets the mock service to its initial turn.
+  ///
+  /// The mock agent returns a deterministic multi-turn flow:
+  ///  - turn 0: `&lt;thought&gt;` + `&lt;action&gt;`
+  ///  - turn 1+: `&lt;thought&gt;` + `&lt;final_answer&gt;`
+  ///
+  /// Widget tests and the preview UI may start multiple runs within the same
+  /// process; without resetting, subsequent runs would skip the `&lt;action&gt;`
+  /// turn, causing no "Action" step to render.
+  void reset() {
+    _turn = 0;
+  }
+
   static String? _extractTag(String text, String tag) {
     final match = RegExp('<$tag>(.*?)</$tag>', dotAll: true).firstMatch(text);
     return match?.group(1)?.trim();
