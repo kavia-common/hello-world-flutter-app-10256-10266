@@ -76,22 +76,30 @@ class AgentService extends ChangeNotifier {
 
   // PUBLIC_INTERFACE
   Future<void> runAgent(String userInput) async {
+    // Each run gets a monotonically increasing id. Any async continuation must
+    // verify it is still the active run before mutating state.
     final runId = ++_activeRunId;
 
+    // Local helper: avoid updating UI/state if this run is stale (e.g. user hit
+    // Clear/reset, or another run started).
+    bool isStale() => runId != _activeRunId;
+
     isRunning = true;
-    // Only clear steps for the currently active run.
     steps = [];
     _messages = [];
     notifyListeners();
 
     final sp = _generateSystemPrompt();
     _messages.add(ChatMessage(role: 'system', content: sp));
-    _messages
-        .add(ChatMessage(role: 'user', content: '<question>$userInput</question>'));
+    _messages.add(
+      ChatMessage(role: 'user', content: '<question>$userInput</question>'),
+    );
 
     try {
       while (true) {
         final content = await _chatService.sendMessage(messages: _messages);
+        if (isStale()) return;
+
         _messages.add(ChatMessage(role: 'assistant', content: content));
 
         final thought = _extractContent(content, 'thought');
@@ -110,11 +118,18 @@ class AgentService extends ChangeNotifier {
           _addStep(StepType.action, action);
           try {
             final obs = await _executeAction(action);
+            if (isStale()) return;
+
             _addStep(StepType.observation, obs);
             _messages.add(
-              ChatMessage(role: 'user', content: '<observation>$obs</observation>'),
+              ChatMessage(
+                role: 'user',
+                content: '<observation>$obs</observation>',
+              ),
             );
           } catch (e) {
+            if (isStale()) return;
+
             _addStep(StepType.error, e.toString());
             _messages.add(
               ChatMessage(
@@ -128,9 +143,12 @@ class AgentService extends ChangeNotifier {
         }
       }
     } catch (e) {
+      if (isStale()) return;
       _addStep(StepType.error, e.toString());
     }
 
+    // Only the currently active run may flip isRunning back to false.
+    if (isStale()) return;
     isRunning = false;
     notifyListeners();
   }
