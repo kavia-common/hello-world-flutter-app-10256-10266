@@ -9,7 +9,9 @@ class ReactAgentController extends ChangeNotifier {
       : _agentService = agentService ?? AgentService() {
     _agentService.addListener(_onAgentChanged);
   }
+
   final AgentService _agentService;
+
   String userInput = '';
   List<AgentStep> steps = [];
   bool isRunning = false;
@@ -46,41 +48,64 @@ class ReactAgentController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setUserInput(String value) { userInput = value; notifyListeners(); }
+  void setUserInput(String value) {
+    userInput = value;
+    notifyListeners();
+  }
 
   // PUBLIC_INTERFACE
   IconData getStepIcon(StepType type) {
     switch (type) {
-      case StepType.thought: return Icons.psychology;
-      case StepType.action: return Icons.settings;
-      case StepType.observation: return Icons.visibility;
-      case StepType.finalAnswer: return Icons.check_circle;
-      case StepType.error: return Icons.warning;
+      case StepType.thought:
+        return Icons.psychology;
+      case StepType.action:
+        return Icons.settings;
+      case StepType.observation:
+        return Icons.visibility;
+      case StepType.finalAnswer:
+        return Icons.check_circle;
+      case StepType.error:
+        return Icons.warning;
     }
   }
 
   // PUBLIC_INTERFACE
   Color getStepColor(StepType type) {
     switch (type) {
-      case StepType.thought: return Colors.blue;
-      case StepType.action: return Colors.orange;
-      case StepType.observation: return Colors.green;
-      case StepType.finalAnswer: return Colors.purple;
-      case StepType.error: return Colors.red;
+      case StepType.thought:
+        return Colors.blue;
+      case StepType.action:
+        return Colors.orange;
+      case StepType.observation:
+        return Colors.green;
+      case StepType.finalAnswer:
+        return Colors.purple;
+      case StepType.error:
+        return Colors.red;
     }
   }
 
   // PUBLIC_INTERFACE
   String getStepTitle(StepType type) {
     switch (type) {
-      case StepType.thought: return '\u{1F4AD} Thought';
-      case StepType.action: return '\u{1F527} Action';
-      case StepType.observation: return '\u{1F50D} Observation';
-      case StepType.finalAnswer: return '\u2705 Final Answer';
-      case StepType.error: return '\u274C Error';
+      // Keep titles plain ASCII so widget tests can reliably match substrings
+      // like "Action" across all test renderers/platforms.
+      case StepType.thought:
+        return 'Thought';
+      case StepType.action:
+        return 'Action';
+      case StepType.observation:
+        return 'Observation';
+      case StepType.finalAnswer:
+        return 'Final Answer';
+      case StepType.error:
+        return 'Error';
     }
   }
 
   @override
-  void dispose() { _agentService.removeListener(_onAgentChanged); super.dispose(); }
+  void dispose() {
+    _agentService.removeListener(_onAgentChanged);
+    super.dispose();
+  }
 }
