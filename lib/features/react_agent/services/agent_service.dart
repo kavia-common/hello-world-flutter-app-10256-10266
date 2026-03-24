@@ -417,7 +417,37 @@ class AgentService extends ChangeNotifier {
 
   String _generateSystemPrompt() {
     final tl = _tools.entries.map((e) => '- ${e.key}: ${e.value.description}').join('\n');
-    return 'You need to solve a problem. To do this, you need to break the problem down into multiple steps. For each step, first use <thought> to think about what to do, then decide on an <action> using one of the available tools. Next, you will receive an <observation> from the environment/tools based on your action. Continue this thinking and acting process until you have enough information to provide a <final_answer>.\n\nPlease strictly use the following XML tag format for all steps:\n- <question> User question </question>\n- <thought> Thinking process </thought>\n- <action> Tool operation to take </action>\n- <observation> Results returned by tools or environment </observation>\n- <final_answer> Final answer </final_answer>\n\nPlease strictly follow these rules:\n- Your response must always include two tags: first <thought>, then either <action> or <final_answer>\n- After outputting <action>, stop generating immediately and wait for the actual <observation>. Generating <observation> yourself will cause errors\n\nIMPORTANT: Action format rules:\n- For tools with NO arguments: use just the tool name, e.g., <action>get_current_time</action>\n- For tools WITH arguments: use function call syntax with parentheses and comma-separated quoted arguments, e.g., <action>write_to_file(\"/path/to/file.txt\", \"content here\")</action>\n- Do NOT use key-value format like tool_name param1=\"value1\" param2=\"value2\"\n- Always enclose string arguments in double quotes\n- Use commas to separate multiple arguments\n\nAvailable tools for this task:\n$tl\n\nEnvironment information:\nOperating System: iOS';
+
+    // Use raw strings for the large static parts, then concatenate the dynamic
+    // tool list in the middle. This preserves behavior (still includes tool
+    // list) while avoiding unnecessary escapes.
+    return r'''You need to solve a problem. To do this, you need to break the problem down into multiple steps. For each step, first use <thought> to think about what to do, then decide on an <action> using one of the available tools. Next, you will receive an <observation> from the environment/tools based on your action. Continue this thinking and acting process until you have enough information to provide a <final_answer>.
+
+Please strictly use the following XML tag format for all steps:
+- <question> User question </question>
+- <thought> Thinking process </thought>
+- <action> Tool operation to take </action>
+- <observation> Results returned by tools or environment </observation>
+- <final_answer> Final answer </final_answer>
+
+Please strictly follow these rules:
+- Your response must always include two tags: first <thought>, then either <action> or <final_answer>
+- After outputting <action>, stop generating immediately and wait for the actual <observation>. Generating <observation> yourself will cause errors
+
+IMPORTANT: Action format rules:
+- For tools with NO arguments: use just the tool name, e.g., <action>get_current_time</action>
+- For tools WITH arguments: use function call syntax with parentheses and comma-separated quoted arguments, e.g., <action>write_to_file(\"/path/to/file.txt\", \"content here\")</action>
+- Do NOT use key-value format like tool_name param1=\"value1\" param2=\"value2\"
+- Always enclose string arguments in double quotes
+- Use commas to separate multiple arguments
+
+Available tools for this task:
+''' +
+        tl +
+        r'''
+
+Environment information:
+Operating System: iOS''';
   }
 }
 

@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.froyo.ridekaro.ride_karo.app-mergeDebugResources-24:/values-night-v8/values-night-v8.xml",
+            "outputFile": "com.froyo.ridekaro.ride_karo.app-mergeDebugResources-25:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
                     "source": "/home/kavia/workspace/code-generation/hello-world-flutter-app-10256-10266/android/app/src/main/res/values-night/styles.xml",

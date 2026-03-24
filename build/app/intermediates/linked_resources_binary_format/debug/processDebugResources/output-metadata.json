@@ -25,6 +25,19 @@
       "filters": [
         {
           "filterType": "ABI",
+          "value": "x86_64"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 4001,
+      "versionName": "1.0.0",
+      "outputFile": "linked-resources-binary-format-x86_64Debug.ap_"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
           "value": "x86"
         }
       ],
@@ -45,19 +58,6 @@
       "versionCode": 2001,
       "versionName": "1.0.0",
       "outputFile": "linked-resources-binary-format-arm64-v8aDebug.ap_"
-    },
-    {
-      "type": "ONE_OF_MANY",
-      "filters": [
-        {
-          "filterType": "ABI",
-          "value": "x86_64"
-        }
-      ],
-      "attributes": [],
-      "versionCode": 4001,
-      "versionName": "1.0.0",
-      "outputFile": "linked-resources-binary-format-x86_64Debug.ap_"
     }
   ],
   "elementType": "File"
