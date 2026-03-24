@@ -57,7 +57,15 @@ class ChatGPTException implements Exception {
   }
 
   @override
-  String toString() => message;
+  String toString() {
+    // Ensure upstream catch blocks that do `e.toString()` (e.g. AgentService)
+    // show the same actionable message we expose via [message].
+    //
+    // This is critical in Live mode so users see the parsed OpenAI error body
+    // (invalid_api_key, model_not_found, insufficient_quota, etc.) rather than
+    // a generic exception string.
+    return message;
+  }
 }
 
 /// Service that communicates with the OpenAI API.

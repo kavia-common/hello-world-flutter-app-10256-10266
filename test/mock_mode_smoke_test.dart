@@ -33,7 +33,7 @@ void main() {
       // (not a generic placeholder).
       expect(find.textContaining('Offline (mock) answer:'), findsOneWidget);
       expect(
-        find.textContaining('What time is it? (mock mode smoke test)'),
+        find.textContaining('You asked: What time is it? (mock mode smoke test)'),
         findsOneWidget,
       );
     },
