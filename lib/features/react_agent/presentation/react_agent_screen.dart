@@ -143,7 +143,7 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                       ],
                     ),
                   ),
-                  child: Icon(Icons.psychology, color: scheme.onPrimary, size: 22),
+                  child: const Icon(Icons.psychology, color: Colors.white, size: 22),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -264,10 +264,10 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                 ),
                 border: Border.all(color: scheme.outline.withAlpha(70)),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.psychology,
                 size: 42,
-                color: scheme.onSurface.withAlpha(190),
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 16),
@@ -343,9 +343,9 @@ class _PrimaryActionButton extends StatelessWidget {
           foregroundColor: WidgetStatePropertyAll(scheme.onPrimary),
         ),
         child: isRunning
-            ? Row(
+            ? const Row(
                 mainAxisSize: MainAxisSize.min,
-                children: const [
+                children: [
                   SizedBox(
                     width: 16,
                     height: 16,
