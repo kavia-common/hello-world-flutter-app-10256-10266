@@ -44,10 +44,14 @@ class ChatGPTException implements Exception {
 // PUBLIC_INTERFACE
 class OpenAIChatService implements ChatService {
   /// Creates an [OpenAIChatService].
-  OpenAIChatService({http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
+  ///
+  /// If [apiKey] is not provided, falls back to [Config.apiKey] (injected via
+  /// `--dart-define`).
+  OpenAIChatService({String? apiKey, http.Client? httpClient})
+      : _apiKey = (apiKey ?? Config.apiKey).trim(),
+        _httpClient = httpClient ?? http.Client();
 
-  final String _apiKey = Config.apiKey;
+  final String _apiKey;
   static const String _baseURL = 'https://api.openai.com/v1/chat/completions';
   static const String _model = 'gpt-4o';
   final http.Client _httpClient;

@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:react_agent/features/react_agent/domain/agent_step.dart';
 import 'package:react_agent/features/react_agent/services/agent_service.dart';
+import 'package:react_agent/features/react_agent/services/api_key_secure_store.dart';
 
 // PUBLIC_INTERFACE
 /// Controller for the ReAct Agent screen. Mirrors Swift ContentViewModel.
+///
+/// Extended with an in-app OpenAI API key entry flow stored securely so users
+/// can enable Live mode without env vars / --dart-define.
 class ReactAgentController extends ChangeNotifier {
-  ReactAgentController({AgentService? agentService})
-      : _agentService = agentService ?? AgentService() {
+  ReactAgentController({AgentService? agentService, ApiKeySecureStore? keyStore})
+      : _agentService = agentService ?? AgentService(),
+        _keyStore = keyStore ?? ApiKeySecureStore() {
     _agentService.addListener(_onAgentChanged);
   }
 
   final AgentService _agentService;
+  final ApiKeySecureStore _keyStore;
 
   String userInput = '';
   List<AgentStep> steps = [];
@@ -18,11 +24,63 @@ class ReactAgentController extends ChangeNotifier {
   bool isMockMode = false;
   String? errorMessage;
 
+  /// Latest loaded key presence for UI.
+  bool hasStoredApiKey = false;
+
   void _onAgentChanged() {
     steps = _agentService.steps;
     isRunning = _agentService.isRunning;
     isMockMode = _agentService.isMockMode;
     notifyListeners();
+  }
+
+  // PUBLIC_INTERFACE
+  /// Loads stored key (if any) and updates the agent service mode.
+  ///
+  /// Call this once from UI initState (fire-and-forget).
+  Future<void> loadStoredApiKeyAndConfigure() async {
+    try {
+      final key = await _keyStore.loadOpenAIApiKey();
+      hasStoredApiKey = (key != null && key.trim().isNotEmpty);
+      _agentService.setApiKey(key);
+    } catch (e) {
+      // Don't block app usage if secure storage fails; stay in existing mode.
+      errorMessage = 'Could not load API key: $e';
+    }
+    notifyListeners();
+  }
+
+  // PUBLIC_INTERFACE
+  /// Saves the API key and switches to Live mode (if non-empty).
+  ///
+  /// Returns a user-displayable status message.
+  Future<String> saveApiKey(String value) async {
+    final trimmed = value.trim();
+    try {
+      await _keyStore.saveOpenAIApiKey(trimmed);
+      hasStoredApiKey = trimmed.isNotEmpty;
+      _agentService.setApiKey(trimmed);
+      notifyListeners();
+      return trimmed.isNotEmpty ? 'Saved. Live mode enabled.' : 'Key cleared. Using Mock mode.';
+    } catch (e) {
+      notifyListeners();
+      return 'Failed to save key: $e';
+    }
+  }
+
+  // PUBLIC_INTERFACE
+  /// Clears stored API key and switches to mock mode fallback.
+  Future<String> clearApiKey() async {
+    try {
+      await _keyStore.clearOpenAIApiKey();
+      hasStoredApiKey = false;
+      _agentService.setApiKey(null);
+      notifyListeners();
+      return 'API key removed. Using Mock mode.';
+    } catch (e) {
+      notifyListeners();
+      return 'Failed to clear key: $e';
+    }
   }
 
   // PUBLIC_INTERFACE

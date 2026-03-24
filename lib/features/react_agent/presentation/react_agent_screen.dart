@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:react_agent/features/react_agent/domain/agent_step.dart';
 import 'package:react_agent/features/react_agent/presentation/react_agent_controller.dart';
 import 'package:react_agent/features/react_agent/presentation/widgets/step_card.dart';
@@ -13,6 +14,11 @@ class ReactAgentScreen extends StatefulWidget {
   State<ReactAgentScreen> createState() => _ReactAgentScreenState();
 }
 
+class _SettingsResult {
+  const _SettingsResult({this.statusMessage});
+  final String? statusMessage;
+}
+
 class _ReactAgentScreenState extends State<ReactAgentScreen> {
   late final ReactAgentController _ctrl;
   late final TextEditingController _textCtrl;
@@ -21,6 +27,9 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
 
   bool _showDebugPanel = false;
 
+  /// UI-only primitive state to show snackbars without using context after await.
+  String? _pendingSnackMessage;
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +37,9 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
     _textCtrl = TextEditingController();
     _scrollCtrl = ScrollController();
     _ctrl.addListener(_onChanged);
+
+    // Fire-and-forget: controller will update primitive fields and notify.
+    _ctrl.loadStoredApiKeyAndConfigure();
   }
 
   void _onChanged() {
@@ -69,6 +81,40 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
     setState(() {
       _showDebugPanel = !_showDebugPanel;
     });
+  }
+
+  Future<void> _openSettingsSheet() async {
+    final result = await showModalBottomSheet<_SettingsResult>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _SettingsSheet(controller: _ctrl),
+    );
+
+    // Do not use context after await. Only set a primitive flag/message here.
+    if (result?.statusMessage != null && result!.statusMessage!.trim().isNotEmpty) {
+      setState(() {
+        _pendingSnackMessage = result.statusMessage;
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Show snackbar based on primitive flag set earlier (safe to use context here).
+    final msg = _pendingSnackMessage;
+    if (msg != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(msg)),
+        );
+      });
+      _pendingSnackMessage = null;
+    }
   }
 
   @override
@@ -118,6 +164,9 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
 
   Widget _buildHeader(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+
+    final String modeLabel = _ctrl.isMockMode ? 'Mock mode' : 'Live mode';
+    final Color modeDot = _ctrl.isMockMode ? scheme.tertiary : scheme.primary;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
@@ -182,12 +231,45 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                                 color: scheme.onSurface.withAlpha(160),
                               ),
                         ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: modeDot,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              modeLabel,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: scheme.onSurface.withAlpha(180),
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              _ctrl.isMockMode ? 'no API key' : 'API key set',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: scheme.onSurface.withAlpha(140),
+                                  ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
+                  IconButton(
+                    tooltip: 'Settings',
+                    onPressed: _openSettingsSheet,
+                    icon: Icon(Icons.settings, color: scheme.onSurface.withAlpha(200)),
+                  ),
                   if (_showDebugPanel)
                     Padding(
-                      padding: const EdgeInsets.only(left: 8),
+                      padding: const EdgeInsets.only(left: 4),
                       child: Icon(
                         Icons.bug_report,
                         size: 18,
@@ -319,6 +401,216 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SettingsSheet extends StatefulWidget {
+  const _SettingsSheet({required this.controller});
+  final ReactAgentController controller;
+
+  @override
+  State<_SettingsSheet> createState() => _SettingsSheetState();
+}
+
+class _SettingsSheetState extends State<_SettingsSheet> {
+  late final TextEditingController _apiKeyCtrl;
+  bool _obscure = true;
+  bool _saving = false;
+  String? _inlineStatus;
+
+  @override
+  void initState() {
+    super.initState();
+    _apiKeyCtrl = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _apiKeyCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSave() async {
+    setState(() {
+      _saving = true;
+      _inlineStatus = null;
+    });
+
+    final msg = await widget.controller.saveApiKey(_apiKeyCtrl.text);
+
+    // Don't use context after await; only primitive state updates.
+    setState(() {
+      _saving = false;
+      _inlineStatus = msg;
+    });
+  }
+
+  Future<void> _handleClear() async {
+    setState(() {
+      _saving = true;
+      _inlineStatus = null;
+      _apiKeyCtrl.clear();
+    });
+
+    final msg = await widget.controller.clearApiKey();
+
+    setState(() {
+      _saving = false;
+      _inlineStatus = msg;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final padding = MediaQuery.viewInsetsOf(context);
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: padding.bottom),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        child: Material(
+          color: scheme.surface,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'Settings',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: scheme.onSurface,
+                          ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest.withAlpha(180),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(color: scheme.outline.withAlpha(80)),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: widget.controller.isMockMode ? scheme.tertiary : scheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            widget.controller.isMockMode ? 'Mock mode' : 'Live mode',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurface.withAlpha(190),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'OpenAI API key',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: scheme.onSurface.withAlpha(220),
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _apiKeyCtrl,
+                  obscureText: _obscure,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'\s'))],
+                  decoration: InputDecoration(
+                    hintText: 'sk-...',
+                    suffixIcon: IconButton(
+                      tooltip: _obscure ? 'Show' : 'Hide',
+                      onPressed: () {
+                        setState(() {
+                          _obscure = !_obscure;
+                        });
+                      },
+                      icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Stored securely on this device (Keychain/Keystore).',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurface.withAlpha(150),
+                        ),
+                  ),
+                ),
+                if (_inlineStatus != null) ...[
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _inlineStatus!,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurface.withAlpha(210),
+                          ),
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: _saving ? null : _handleClear,
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      label: const Text('Remove key'),
+                    ),
+                    const Spacer(),
+                    ElevatedButton.icon(
+                      onPressed: _saving ? null : _handleSave,
+                      icon: _saving
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.save, size: 18),
+                      label: const Text('Save'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    const Spacer(),
+                    TextButton(
+                      onPressed: () {
+                        // Return a snackbar message (if any) without using context after await.
+                        Navigator.of(context).pop(
+                          _SettingsResult(statusMessage: _inlineStatus),
+                        );
+                      },
+                      child: const Text('Done'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
