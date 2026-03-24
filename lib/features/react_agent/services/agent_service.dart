@@ -9,8 +9,14 @@ import 'package:react_agent/features/react_agent/domain/chat_message.dart';
 import 'package:react_agent/features/react_agent/services/chat_service.dart';
 import 'package:react_agent/features/react_agent/services/chat_service_factory.dart';
 import 'package:react_agent/features/react_agent/services/mock_chat_service.dart';
+import 'package:react_agent/features/react_agent/services/openai_chat_service.dart';
 
-enum AgentErrorType { noActionFound, toolNotFound, invalidActionFormat, executionError }
+enum AgentErrorType {
+  noActionFound,
+  toolNotFound,
+  invalidActionFormat,
+  executionError,
+}
 
 class AgentException implements Exception {
   const AgentException(this.type, [this.detail]);
@@ -44,7 +50,7 @@ class AgentService extends ChangeNotifier {
   /// - Live mode when an API key is available (in-app stored key or `--dart-define`)
   /// - Mock mode when no API key is present (offline/mock mode)
   AgentService({ChatService? chatService})
-      : _chatService = chatService ?? ChatServiceFactory.create() {
+    : _chatService = chatService ?? ChatServiceFactory.create() {
     _setupTools();
   }
 
@@ -131,7 +137,9 @@ class AgentService extends ChangeNotifier {
 
     final sp = _generateSystemPrompt();
     _messages.add(ChatMessage(role: 'system', content: sp));
-    _messages.add(ChatMessage(role: 'user', content: '<question>$userInput</question>'));
+    _messages.add(
+      ChatMessage(role: 'user', content: '<question>$userInput</question>'),
+    );
 
     try {
       while (true) {
@@ -167,7 +175,12 @@ class AgentService extends ChangeNotifier {
             await yieldForMockUI();
             if (isStale()) return;
 
-            _messages.add(ChatMessage(role: 'user', content: '<observation>$obs</observation>'));
+            _messages.add(
+              ChatMessage(
+                role: 'user',
+                content: '<observation>$obs</observation>',
+              ),
+            );
           } catch (e) {
             if (isStale()) return;
 
@@ -175,7 +188,12 @@ class AgentService extends ChangeNotifier {
             await yieldForMockUI();
             if (isStale()) return;
 
-            _messages.add(ChatMessage(role: 'user', content: '<observation>Error: $e</observation>'));
+            _messages.add(
+              ChatMessage(
+                role: 'user',
+                content: '<observation>Error: $e</observation>',
+              ),
+            );
           }
         } else {
           throw const AgentException(AgentErrorType.noActionFound);
@@ -183,7 +201,14 @@ class AgentService extends ChangeNotifier {
       }
     } catch (e) {
       if (isStale()) return;
-      _addStep(StepType.error, e.toString());
+
+      // Prefer structured OpenAI error strings when available.
+      // (Ensures HTTP status/body or DNS/TLS details are visible in the UI.)
+      if (e is ChatGPTException) {
+        _addStep(StepType.error, e.message);
+      } else {
+        _addStep(StepType.error, e.toString());
+      }
     }
 
     // Only the currently active run may flip isRunning back to false.
@@ -194,13 +219,7 @@ class AgentService extends ChangeNotifier {
 
   void _addStep(StepType type, String content) {
     steps = List.from(steps)
-      ..add(
-        AgentStep(
-          type: type,
-          content: content,
-          timestamp: DateTime.now(),
-        ),
-      );
+      ..add(AgentStep(type: type, content: content, timestamp: DateTime.now()));
     notifyListeners();
   }
 
@@ -210,14 +229,20 @@ class AgentService extends ChangeNotifier {
       description: 'Read contents of a file',
       action: (args) async {
         if (args.isEmpty) {
-          throw const AgentException(AgentErrorType.executionError, 'File path required');
+          throw const AgentException(
+            AgentErrorType.executionError,
+            'File path required',
+          );
         }
         final tempDir = await getTemporaryDirectory();
         final file = File('${tempDir.path}/${args.first}');
         try {
           return await file.readAsString();
         } catch (e) {
-          throw AgentException(AgentErrorType.executionError, 'Could not read file: $e');
+          throw AgentException(
+            AgentErrorType.executionError,
+            'Could not read file: $e',
+          );
         }
       },
     );
@@ -240,7 +265,10 @@ class AgentService extends ChangeNotifier {
           await file.writeAsString(content);
           return 'Write successful';
         } catch (e) {
-          throw AgentException(AgentErrorType.executionError, 'Could not write file: $e');
+          throw AgentException(
+            AgentErrorType.executionError,
+            'Could not write file: $e',
+          );
         }
       },
     );
@@ -248,7 +276,8 @@ class AgentService extends ChangeNotifier {
     _tools['get_current_time'] = AgentTool(
       name: 'get_current_time',
       description: 'Get current date and time',
-      action: (args) async => DateFormat.yMMMd().add_jms().format(DateTime.now()),
+      action:
+          (args) async => DateFormat.yMMMd().add_jms().format(DateTime.now()),
     );
 
     _tools['calculate'] = AgentTool(
@@ -256,7 +285,10 @@ class AgentService extends ChangeNotifier {
       description: 'Perform simple mathematical calculations',
       action: (args) async {
         if (args.isEmpty) {
-          throw const AgentException(AgentErrorType.executionError, 'Expression required');
+          throw const AgentException(
+            AgentErrorType.executionError,
+            'Expression required',
+          );
         }
         try {
           final result = _evaluateExpression(args.first);
@@ -412,11 +444,16 @@ class AgentService extends ChangeNotifier {
   }
 
   String? _extractContent(String text, String tag) {
-    return RegExp('<$tag>(.*?)</$tag>', dotAll: true).firstMatch(text)?.group(1)?.trim();
+    return RegExp(
+      '<$tag>(.*?)</$tag>',
+      dotAll: true,
+    ).firstMatch(text)?.group(1)?.trim();
   }
 
   String _generateSystemPrompt() {
-    final tl = _tools.entries.map((e) => '- ${e.key}: ${e.value.description}').join('\n');
+    final tl = _tools.entries
+        .map((e) => '- ${e.key}: ${e.value.description}')
+        .join('\n');
 
     // Use raw strings for the large static parts, then concatenate the dynamic
     // tool list in the middle. This preserves behavior (still includes tool

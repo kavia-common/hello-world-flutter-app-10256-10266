@@ -93,7 +93,8 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
     );
 
     // Do not use context after await. Only set a primitive flag/message here.
-    if (result?.statusMessage != null && result!.statusMessage!.trim().isNotEmpty) {
+    if (result?.statusMessage != null &&
+        result!.statusMessage!.trim().isNotEmpty) {
       setState(() {
         _pendingSnackMessage = result.statusMessage;
       });
@@ -109,9 +110,9 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
     if (msg != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(msg)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
       });
       _pendingSnackMessage = null;
     }
@@ -150,7 +151,10 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                 children: [
                   _buildHeader(context),
                   Expanded(
-                    child: _ctrl.steps.isNotEmpty ? _buildSteps() : _buildEmpty(context),
+                    child:
+                        _ctrl.steps.isNotEmpty
+                            ? _buildSteps()
+                            : _buildEmpty(context),
                   ),
                 ],
               ),
@@ -211,7 +215,11 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                         ],
                       ),
                     ),
-                    child: const Icon(Icons.psychology, color: Colors.white, size: 22),
+                    child: const Icon(
+                      Icons.psychology,
+                      color: Colors.white,
+                      size: 22,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
@@ -220,16 +228,17 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                       children: [
                         Text(
                           'ReAct Agent',
-                          style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                color: scheme.onSurface,
-                              ),
+                          style: Theme.of(context).textTheme.headlineLarge
+                              ?.copyWith(color: scheme.onSurface),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Watch the agent reason, act with tools, and answer.',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: scheme.onSurface.withAlpha(160),
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurface.withAlpha(160),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Row(
@@ -245,17 +254,21 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                             const SizedBox(width: 8),
                             Text(
                               modeLabel,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: scheme.onSurface.withAlpha(180),
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurface.withAlpha(180),
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                             const SizedBox(width: 10),
                             Text(
                               _ctrl.isMockMode ? 'no API key' : 'API key set',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: scheme.onSurface.withAlpha(140),
-                                  ),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.bodySmall?.copyWith(
+                                color: scheme.onSurface.withAlpha(140),
+                              ),
                             ),
                           ],
                         ),
@@ -265,7 +278,10 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                   IconButton(
                     tooltip: 'Settings',
                     onPressed: _openSettingsSheet,
-                    icon: Icon(Icons.settings, color: scheme.onSurface.withAlpha(200)),
+                    icon: Icon(
+                      Icons.settings,
+                      color: scheme.onSurface.withAlpha(200),
+                    ),
                   ),
                   if (_showDebugPanel)
                     Padding(
@@ -292,14 +308,16 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
               Row(
                 children: [
                   OutlinedButton.icon(
-                    onPressed: _ctrl.isRunning ? null : () => _ctrl.clearSteps(),
+                    onPressed:
+                        _ctrl.isRunning ? null : () => _ctrl.clearSteps(),
                     icon: const Icon(Icons.refresh, size: 18),
                     label: const Text('Clear'),
                   ),
                   const Spacer(),
                   _PrimaryActionButton(
                     isRunning: _ctrl.isRunning,
-                    enabled: !_ctrl.isRunning && _ctrl.userInput.trim().isNotEmpty,
+                    enabled:
+                        !_ctrl.isRunning && _ctrl.userInput.trim().isNotEmpty,
                     onPressed: () {
                       // Fire-and-forget; controller internally awaits service.
                       _ctrl.startAgent();
@@ -325,9 +343,8 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
                       Expanded(
                         child: Text(
                           _ctrl.errorMessage!,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: scheme.onSurface,
-                              ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: scheme.onSurface),
                         ),
                       ),
                     ],
@@ -350,7 +367,11 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
         final step = _ctrl.steps[i];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: StepCard(key: ValueKey(step.id), step: step, controller: _ctrl),
+          child: StepCard(
+            key: ValueKey(step.id),
+            step: step,
+            controller: _ctrl,
+          ),
         );
       },
     );
@@ -387,17 +408,17 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
             const SizedBox(height: 16),
             Text(
               'Ready when you are',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: scheme.onSurface,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(color: scheme.onSurface),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Type a question above to see a step-by-step timeline of thoughts, tool calls, and observations.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: scheme.onSurface.withAlpha(160),
-                  ),
+                color: scheme.onSurface.withAlpha(160),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -483,13 +504,16 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   children: [
                     Text(
                       'Settings',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: scheme.onSurface,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleLarge?.copyWith(color: scheme.onSurface),
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: scheme.surfaceContainerHighest.withAlpha(180),
                         borderRadius: BorderRadius.circular(999),
@@ -502,16 +526,23 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                             height: 8,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: widget.controller.isMockMode ? scheme.tertiary : scheme.primary,
+                              color:
+                                  widget.controller.isMockMode
+                                      ? scheme.tertiary
+                                      : scheme.primary,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            widget.controller.isMockMode ? 'Mock mode' : 'Live mode',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: scheme.onSurface.withAlpha(190),
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            widget.controller.isMockMode
+                                ? 'Mock mode'
+                                : 'Live mode',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodySmall?.copyWith(
+                              color: scheme.onSurface.withAlpha(190),
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ],
                       ),
@@ -524,9 +555,9 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   child: Text(
                     'OpenAI API key',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: scheme.onSurface.withAlpha(220),
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: scheme.onSurface.withAlpha(220),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -535,7 +566,9 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   obscureText: _obscure,
                   autocorrect: false,
                   enableSuggestions: false,
-                  inputFormatters: [FilteringTextInputFormatter.deny(RegExp(r'\s'))],
+                  inputFormatters: [
+                    FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                  ],
                   decoration: InputDecoration(
                     hintText: 'sk-...',
                     suffixIcon: IconButton(
@@ -545,7 +578,9 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                           _obscure = !_obscure;
                         });
                       },
-                      icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+                      icon: Icon(
+                        _obscure ? Icons.visibility : Icons.visibility_off,
+                      ),
                     ),
                   ),
                 ),
@@ -555,8 +590,8 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                   child: Text(
                     'Stored securely on this device (Keychain/Keystore).',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurface.withAlpha(150),
-                        ),
+                      color: scheme.onSurface.withAlpha(150),
+                    ),
                   ),
                 ),
                 if (_inlineStatus != null) ...[
@@ -566,8 +601,8 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                     child: Text(
                       _inlineStatus!,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: scheme.onSurface.withAlpha(210),
-                          ),
+                        color: scheme.onSurface.withAlpha(210),
+                      ),
                     ),
                   ),
                 ],
@@ -582,13 +617,16 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                     const Spacer(),
                     ElevatedButton.icon(
                       onPressed: _saving ? null : _handleSave,
-                      icon: _saving
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.save, size: 18),
+                      icon:
+                          _saving
+                              ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Icon(Icons.save, size: 18),
                       label: const Text('Save'),
                     ),
                   ],
@@ -600,9 +638,9 @@ class _SettingsSheetState extends State<_SettingsSheet> {
                     TextButton(
                       onPressed: () {
                         // Return a snackbar message (if any) without using context after await.
-                        Navigator.of(context).pop(
-                          _SettingsResult(statusMessage: _inlineStatus),
-                        );
+                        Navigator.of(
+                          context,
+                        ).pop(_SettingsResult(statusMessage: _inlineStatus));
                       },
                       child: const Text('Done'),
                     ),
@@ -664,22 +702,30 @@ class _DebugOverlayPanel extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.bug_report, size: 18, color: scheme.onSurface.withAlpha(200)),
+                        Icon(
+                          Icons.bug_report,
+                          size: 18,
+                          color: scheme.onSurface.withAlpha(200),
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Debug',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  color: scheme.onSurface,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleSmall?.copyWith(
+                              color: scheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                         Text(
                           'long-press header to hide',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: scheme.onSurface.withAlpha(150),
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(
+                            color: scheme.onSurface.withAlpha(150),
+                          ),
                         ),
                       ],
                     ),
@@ -704,66 +750,80 @@ class _DebugOverlayPanel extends StatelessWidget {
                     ),
                     const SizedBox(height: 10),
                     Expanded(
-                      child: controller.steps.isEmpty
-                          ? Text(
-                              '(no steps yet)',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: scheme.onSurface.withAlpha(170),
-                                  ),
-                            )
-                          : ListView.separated(
-                              itemCount: controller.steps.length,
-                              separatorBuilder: (_, __) => Divider(
-                                height: 12,
-                                color: scheme.outline.withAlpha(60),
-                              ),
-                              itemBuilder: (context, index) {
-                                final AgentStep s = controller.steps[index];
-                                final title = controller.getStepTitle(s.type);
-                                final first = _firstLine(s.content);
+                      child:
+                          controller.steps.isEmpty
+                              ? Text(
+                                '(no steps yet)',
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.copyWith(
+                                  color: scheme.onSurface.withAlpha(170),
+                                ),
+                              )
+                              : ListView.separated(
+                                itemCount: controller.steps.length,
+                                separatorBuilder:
+                                    (_, __) => Divider(
+                                      height: 12,
+                                      color: scheme.outline.withAlpha(60),
+                                    ),
+                                itemBuilder: (context, index) {
+                                  final AgentStep s = controller.steps[index];
+                                  final title = controller.getStepTitle(s.type);
+                                  final first = _firstLine(s.content);
 
-                                return DefaultTextStyle(
-                                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                                        color: scheme.onSurface.withAlpha(210),
-                                      ),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        '${index + 1}.',
-                                        style: TextStyle(color: scheme.onSurface.withAlpha(140)),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              '${s.type.name} • $title',
-                                              style: TextStyle(
-                                                color: scheme.onSurface,
-                                                fontWeight: FontWeight.w600,
-                                              ),
+                                  return DefaultTextStyle(
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.bodySmall!.copyWith(
+                                      color: scheme.onSurface.withAlpha(210),
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${index + 1}.',
+                                          style: TextStyle(
+                                            color: scheme.onSurface.withAlpha(
+                                              140,
                                             ),
-                                            if (first.isNotEmpty) ...[
-                                              const SizedBox(height: 2),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
                                               Text(
-                                                first,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
+                                                '${s.type.name} • $title',
                                                 style: TextStyle(
-                                                  color: scheme.onSurface.withAlpha(175),
+                                                  color: scheme.onSurface,
+                                                  fontWeight: FontWeight.w600,
                                                 ),
                                               ),
+                                              if (first.isNotEmpty) ...[
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  first,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: scheme.onSurface
+                                                        .withAlpha(175),
+                                                  ),
+                                                ),
+                                              ],
                                             ],
-                                          ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
+                                      ],
+                                    ),
+                                  );
+                                },
+                              ),
                     ),
                   ],
                 ),
@@ -796,9 +856,9 @@ class _DebugChip extends StatelessWidget {
       child: Text(
         '$label: $value',
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: scheme.onSurface,
-              fontFeatures: const [FontFeature.tabularFigures()],
-            ),
+          color: scheme.onSurface,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
       ),
     );
   }
@@ -823,28 +883,30 @@ class _PrimaryActionButton extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
-        gradient: enabled
-            ? LinearGradient(
-                colors: [
-                  scheme.primary.withAlpha(240),
-                  scheme.tertiary.withAlpha(220),
-                ],
-              )
-            : LinearGradient(
-                colors: [
-                  scheme.primary.withAlpha(90),
-                  scheme.tertiary.withAlpha(70),
-                ],
-              ),
-        boxShadow: enabled
-            ? [
-                BoxShadow(
-                  color: scheme.primary.withAlpha(55),
-                  blurRadius: 18,
-                  offset: const Offset(0, 10),
+        gradient:
+            enabled
+                ? LinearGradient(
+                  colors: [
+                    scheme.primary.withAlpha(240),
+                    scheme.tertiary.withAlpha(220),
+                  ],
+                )
+                : LinearGradient(
+                  colors: [
+                    scheme.primary.withAlpha(90),
+                    scheme.tertiary.withAlpha(70),
+                  ],
                 ),
-              ]
-            : const [],
+        boxShadow:
+            enabled
+                ? [
+                  BoxShadow(
+                    color: scheme.primary.withAlpha(55),
+                    blurRadius: 18,
+                    offset: const Offset(0, 10),
+                  ),
+                ]
+                : const [],
       ),
       child: ElevatedButton(
         onPressed: enabled ? onPressed : null,
@@ -853,20 +915,21 @@ class _PrimaryActionButton extends StatelessWidget {
           shadowColor: const WidgetStatePropertyAll(Colors.transparent),
           foregroundColor: WidgetStatePropertyAll(scheme.onPrimary),
         ),
-        child: isRunning
-            ? const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  SizedBox(width: 10),
-                  Text('Agent is thinking...'),
-                ],
-              )
-            : const Text('Start Agent'),
+        child:
+            isRunning
+                ? const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                    SizedBox(width: 10),
+                    Text('Agent is thinking...'),
+                  ],
+                )
+                : const Text('Start Agent'),
       ),
     );
   }

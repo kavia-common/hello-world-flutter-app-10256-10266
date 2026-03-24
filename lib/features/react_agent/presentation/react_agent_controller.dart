@@ -9,9 +9,11 @@ import 'package:react_agent/features/react_agent/services/api_key_secure_store.d
 /// Extended with an in-app OpenAI API key entry flow stored securely so users
 /// can enable Live mode without env vars / --dart-define.
 class ReactAgentController extends ChangeNotifier {
-  ReactAgentController({AgentService? agentService, ApiKeySecureStore? keyStore})
-      : _agentService = agentService ?? AgentService(),
-        _keyStore = keyStore ?? ApiKeySecureStore() {
+  ReactAgentController({
+    AgentService? agentService,
+    ApiKeySecureStore? keyStore,
+  }) : _agentService = agentService ?? AgentService(),
+       _keyStore = keyStore ?? ApiKeySecureStore() {
     _agentService.addListener(_onAgentChanged);
   }
 
@@ -61,7 +63,9 @@ class ReactAgentController extends ChangeNotifier {
       hasStoredApiKey = trimmed.isNotEmpty;
       _agentService.setApiKey(trimmed);
       notifyListeners();
-      return trimmed.isNotEmpty ? 'Saved. Live mode enabled.' : 'Key cleared. Using Mock mode.';
+      return trimmed.isNotEmpty
+          ? 'Saved. Live mode enabled.'
+          : 'Key cleared. Using Mock mode.';
     } catch (e) {
       notifyListeners();
       return 'Failed to save key: $e';
