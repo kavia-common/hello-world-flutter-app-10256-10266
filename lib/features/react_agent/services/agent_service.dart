@@ -64,14 +64,12 @@ class AgentService extends ChangeNotifier {
   /// This is used by the UI "Clear" button to ensure both controller and service
   /// state stay in sync across multiple runs.
   void reset() {
+    // Invalidate any in-flight runAgent loop so late async results cannot
+    // repopulate steps after the user presses "Clear".
+    _activeRunId++;
+
     steps = [];
     _messages = [];
-    // If another run started while we were awaiting network/tool work,
-    // do not overwrite its state.
-    if (runId != _activeRunId) {
-      return;
-    }
-
     isRunning = false;
     notifyListeners();
   }
