@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.froyo.ridekaro.ride_karo.app-mergeReleaseResources-24:/values-te/values-te.xml",
+            "outputFile": "com.froyo.ridekaro.ride_karo.app-mergeReleaseResources-25:/values-te/values-te.xml",
             "map": [
                 {
                     "source": "/home/kavia/.gradle/caches/8.10.2/transforms/dfc2fbca530748e569b0737b09fa016f/transformed/core-1.13.1/res/values-te/values-te.xml",
