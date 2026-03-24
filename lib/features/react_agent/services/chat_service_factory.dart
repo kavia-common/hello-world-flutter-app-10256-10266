@@ -30,5 +30,5 @@ class ChatServiceFactory {
     }
 
     return MockChatService();
-    }
+  }
 }
