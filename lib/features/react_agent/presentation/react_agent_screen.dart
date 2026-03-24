@@ -28,19 +28,34 @@ class _ReactAgentScreenState extends State<ReactAgentScreen> {
   void _onChanged() {
     // Keep existing behavior intact: clear input when controller resets,
     // autoscroll when new steps arrive, and rebuild.
-    if (_ctrl.userInput.isEmpty && _textCtrl.text.isNotEmpty) _textCtrl.clear();
+    if (_ctrl.userInput.isEmpty && _textCtrl.text.isNotEmpty) {
+      _textCtrl.clear();
+    }
+
     final nc = _ctrl.steps.length;
+
     if (nc > _prevCount && nc > 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollCtrl.hasClients) {
+        if (!_scrollCtrl.hasClients) return;
+
+        // In widget tests (and occasionally in preview), scroll metrics can be
+        // temporarily unavailable even when hasClients is true. Avoid throwing
+        // and breaking the rebuild loop.
+        try {
+          final pos = _scrollCtrl.position;
+          if (!pos.hasContentDimensions) return;
+
           _scrollCtrl.animateTo(
-            _scrollCtrl.position.maxScrollExtent,
+            pos.maxScrollExtent,
             duration: const Duration(milliseconds: 500),
             curve: Curves.easeInOut,
           );
+        } catch (_) {
+          // Intentionally ignore scroll errors; the timeline should still update.
         }
       });
     }
+
     _prevCount = nc;
     setState(() {});
   }

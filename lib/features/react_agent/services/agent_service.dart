@@ -51,40 +51,69 @@ class AgentService extends ChangeNotifier {
     }
     return OpenAIChatService();
   }
+
   List<AgentStep> steps = [];
   bool isRunning = false;
   final Map<String, AgentTool> _tools = {};
   List<ChatMessage> _messages = [];
 
   // PUBLIC_INTERFACE
+  /// Resets the agent state (timeline, message history, and running flag).
+  ///
+  /// This is used by the UI "Clear" button to ensure both controller and service
+  /// state stay in sync across multiple runs.
+  void reset() {
+    steps = [];
+    _messages = [];
+    isRunning = false;
+    notifyListeners();
+  }
+
+  // PUBLIC_INTERFACE
   Future<void> runAgent(String userInput) async {
-    isRunning = true; steps = []; _messages = []; notifyListeners();
+    isRunning = true;
+    steps = [];
+    _messages = [];
+    notifyListeners();
+
     final sp = _generateSystemPrompt();
     _messages.add(ChatMessage(role: 'system', content: sp));
-    _messages.add(ChatMessage(role: 'user', content: '<question>$userInput</question>'));
+    _messages
+        .add(ChatMessage(role: 'user', content: '<question>$userInput</question>'));
+
     try {
       while (true) {
         final content = await _chatService.sendMessage(messages: _messages);
         _messages.add(ChatMessage(role: 'assistant', content: content));
+
         final thought = _extractContent(content, 'thought');
         if (thought != null) {
           _addStep(StepType.thought, thought);
         }
+
         final fa = _extractContent(content, 'final_answer');
         if (fa != null) {
           _addStep(StepType.finalAnswer, fa);
           break;
         }
+
         final action = _extractContent(content, 'action');
         if (action != null) {
           _addStep(StepType.action, action);
           try {
             final obs = await _executeAction(action);
             _addStep(StepType.observation, obs);
-            _messages.add(ChatMessage(role: 'user', content: '<observation>$obs</observation>'));
+            _messages.add(
+              ChatMessage(role: 'user', content: '<observation>$obs</observation>'),
+            );
           } catch (e) {
             _addStep(StepType.error, e.toString());
-            _messages.add(ChatMessage(role: 'user', content: '<observation>Error: $e</observation>'));
+            _messages.add(
+              ChatMessage(
+                role: 'user',
+                content: '<observation>Error: $e</observation>',
+              ),
+            );
           }
         } else {
           throw const AgentException(AgentErrorType.noActionFound);
@@ -93,7 +122,9 @@ class AgentService extends ChangeNotifier {
     } catch (e) {
       _addStep(StepType.error, e.toString());
     }
-    isRunning = false; notifyListeners();
+
+    isRunning = false;
+    notifyListeners();
   }
 
   void _addStep(StepType type, String content) {
